@@ -1,10 +1,8 @@
 import os
-import sys
 import torch
 import torch.distributed as dist
 from PIL import Image
 from diffusers.utils import export_to_video
-
 from sceneflow.pipelines.lingbot_world.pipeline_lingbot_world import LingBotPipeline
 from sceneflow.synthesis.visual_generation.lingbot.lingbot_world.distributed.util import init_distributed_group
 
@@ -13,7 +11,6 @@ image_path = "./data/test_case1/ref_image.png"
 pretrained_model_path = "robbyant/lingbot-world-base-cam"
 input_image = Image.open(image_path).convert("RGB")
 prompt = "A charming medieval village with cobblestone streets, thatched-roof houses."
-
 local_rank = int(os.getenv("LOCAL_RANK", 0))
 rank = int(os.getenv("RANK", 0))
 world_size = int(os.getenv("WORLD_SIZE", 1))
@@ -29,8 +26,8 @@ else:
 
 
 pipeline = LingBotPipeline.from_pretrained(
-    synthesis_model_path=pretrained_model_path,
-    task="i2v-A14B",
+    model_path=pretrained_model_path,
+    mode="i2v-A14B",
     device=f"cuda:{local_rank}",
     rank=rank,
     t5_fsdp=(world_size > 1),
@@ -42,14 +39,10 @@ pipeline = LingBotPipeline.from_pretrained(
 
 action_commands = ["backward", "camera_l"] 
 output_video = pipeline(
-    input_image=input_image,
-    num_output_frames=81,
-    interaction_signal={
-        "prompt": prompt,
-        "action_list": action_commands,
-    },
-    resize_H=480,
-    resize_W=832,
+    images=input_image,
+    num_frames=81,
+    prompt=prompt,
+    interactions=action_commands,
     seed=42
 )
 
