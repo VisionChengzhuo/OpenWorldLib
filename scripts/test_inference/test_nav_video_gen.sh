@@ -9,7 +9,7 @@ show_help() {
     echo "  - hunyuan-gamecraft    : Run test_hunyuan_gamecraft.py"
     echo "  - hunyuanworld-voyager : Run test_hunyuan_world_voyager.py"
     echo "  - astra                : Run test_astra.py"
-    echo "  - yume                 : Run test_yume.py"
+    echo "  - yume-1p5             : Run test_yume_1p5.py"
     echo "  - lingbot-world        : Run test_lingbot_world.py"
     echo ""
 }
@@ -41,9 +41,9 @@ case $METHOD_NAME in
         echo "Executing: astra..."
         CUDA_VISIBLE_DEVICES=0 python test/test_astra.py
         ;;
-    "yume")
+    "yume-1p5")
         echo "Executing: yume..."
-        CUDA_VISIBLE_DEVICES=0 python test/test_yume.py
+        CUDA_VISIBLE_DEVICES=0 python test/test_yume_1p5.py
         ;;
     "lingbot-world")
         echo "Executing: lingbot_world..."
