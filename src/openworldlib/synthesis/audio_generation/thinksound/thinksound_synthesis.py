@@ -124,7 +124,7 @@ class ThinkSoundSynthesis(BaseSynthesis):
     @classmethod
     def from_pretrained(
         cls, 
-        synthesis_model_path: str,
+        model_path: str,
         model_config: Optional[str] = "src/openworldlib/synthesis/audio_generation/thinksound/ThinkSound/ThinkSound/configs/model_configs/thinksound.json",
         duration_sec: float = 8.0,
         seed: int = 42,
@@ -139,7 +139,7 @@ class ThinkSoundSynthesis(BaseSynthesis):
         从预训练模型路径加载 ThinkSoundSynthesis
         
         Args:
-            synthesis_model_path: 模型路径，可以是本地目录路径或 HuggingFace repo_id
+            model_path: 模型路径，可以是本地目录路径或 HuggingFace repo_id
             model_config: 模型配置 json 路径
             duration_sec: 音频时长（秒）
             seed: 随机种子
@@ -154,8 +154,8 @@ class ThinkSoundSynthesis(BaseSynthesis):
             ThinkSoundSynthesis 实例
         """
         # 解析模型根目录（本地或 HuggingFace）
-        if os.path.isdir(synthesis_model_path):
-            model_root = synthesis_model_path
+        if os.path.isdir(model_path):
+            model_root = model_path
             if logger_obj:
                 logger_obj.info(f"Using local model directory: {model_root}")
             
@@ -179,14 +179,14 @@ class ThinkSoundSynthesis(BaseSynthesis):
 
         else:
             if logger_obj:
-                logger_obj.info(f"Downloading weights from HuggingFace repo: {synthesis_model_path}")
+                logger_obj.info(f"Downloading weights from HuggingFace repo: {model_path}")
             else:
-                print(f"Downloading weights from HuggingFace repo: {synthesis_model_path}")
+                print(f"Downloading weights from HuggingFace repo: {model_path}")
             
             download_dir = os.path.join(os.getcwd(), "hugid")
             os.makedirs(download_dir, exist_ok=True)
             
-            model_root = snapshot_download(synthesis_model_path, local_dir=download_dir)
+            model_root = snapshot_download(model_path, local_dir=download_dir)
             
             if logger_obj:
                 logger_obj.info(f"Model downloaded to: {model_root}")

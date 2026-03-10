@@ -26,7 +26,7 @@ class MMAudioPipeline:
     @classmethod
     def from_pretrained(
         cls, 
-        pretrained_model_path: str,
+        model_path: str,
         variant: str = "large_44k_v2",
         full_precision: bool = False,
         num_steps: int = 25,
@@ -38,7 +38,7 @@ class MMAudioPipeline:
         从预训练模型加载完整的 pipeline
 
         Args:
-            pretrained_model_path: 预训练模型路径，可以是本地路径或者hugid路径
+            model_path: 预训练模型路径，可以是本地路径或者hugid路径
             variant: 模型变体名称
             full_precision: 是否使用全精度（float32）
             num_steps: FlowMatching 推理步数
@@ -53,7 +53,7 @@ class MMAudioPipeline:
             logger_obj.info("Loading MMAudio synthesis model...")
         
         synthesis_model = MMAudioSynthesis.from_pretrained(
-            pretrained_model_path=pretrained_model_path,
+            model_path=model_path,
             variant=variant,
             full_precision=full_precision,
             num_steps=num_steps,

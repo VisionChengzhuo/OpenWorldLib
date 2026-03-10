@@ -21,7 +21,7 @@ torch.backends.cudnn.allow_tf32 = True
 log = logging.getLogger()
 
 def load_models(variant: str, full_precision: bool, num_steps: int,
-                pretrained_model_path, device, logger_obj):
+                model_path, device, logger_obj):
     """
     加载 MMAudio 模型
     
@@ -41,10 +41,10 @@ def load_models(variant: str, full_precision: bool, num_steps: int,
         logger_obj.info(f"Loading MMAudio model variant: {variant}")
     
 
-    if os.path.isdir(pretrained_model_path):
-        model_root = Path(pretrained_model_path)
+    if os.path.isdir(model_path):
+        model_root = Path(model_path)
     else:
-        repo_id = pretrained_model_path
+        repo_id = model_path
         folder_name = repo_id.split("/")[-1]
         download_dir = Path(os.getcwd()) / folder_name
         model_root = Path(
@@ -131,7 +131,7 @@ class MMAudioSynthesis(BaseSynthesis):
     @classmethod
     def from_pretrained(
         cls,
-        pretrained_model_path,
+        model_path,
         variant: str = "large_44k_v2",
         full_precision: bool = False,
         num_steps: int = 25,
@@ -143,7 +143,7 @@ class MMAudioSynthesis(BaseSynthesis):
         从预训练模型路径加载 MMAudioSynthesis
         
         Args:
-            pretrained_model_path: 预训练模型路径，可以是本地路径或者hugid路径
+            model_path: 预训练模型路径，可以是本地路径或者hugid路径
             variant: 模型变体名称
             full_precision: 是否使用全精度（float32）
             num_steps: FlowMatching 推理步数
@@ -174,7 +174,7 @@ class MMAudioSynthesis(BaseSynthesis):
             variant=variant,
             full_precision=full_precision,
             num_steps=num_steps,
-            pretrained_model_path=pretrained_model_path,
+            model_path=model_path,
             device=device,
             logger_obj=logger_inst,
         )

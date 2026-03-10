@@ -36,7 +36,7 @@ class ThinkSoundPipeline:
     @classmethod
     def from_pretrained(
         cls, 
-        synthesis_model_path: str,
+        model_path: str,
         model_config: str = "src/openworldlib/synthesis/audio_generation/thinksound/ThinkSound/ThinkSound/configs/model_configs/thinksound.json",
         duration_sec: float = 8.0,
         seed: int = 42,
@@ -54,7 +54,7 @@ class ThinkSoundPipeline:
         从预训练模型加载完整的 pipeline
         
         Args:
-            synthesis_model_path: 模型根目录或 HuggingFace repo_id
+            model_path: 模型根目录或 HuggingFace repo_id
             model_config: 模型配置 json 路径
             duration_sec: 音频时长（秒）
             seed: 随机种子
@@ -77,7 +77,7 @@ class ThinkSoundPipeline:
             logger_obj.info("Loading ThinkSound synthesis model...")
         
         synthesis_model = ThinkSoundSynthesis.from_pretrained(
-            synthesis_model_path=synthesis_model_path,
+            model_path=model_path,
             model_config=model_config,
             duration_sec=duration_sec,
             seed=seed,
