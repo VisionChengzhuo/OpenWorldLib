@@ -66,7 +66,10 @@
 
 - **Awesome-Efficient-Video-Generation** · [[Paper]](#) [[Code]](https://github.com/oahzxl/Awesome-Efficient-Video-Generation)
 - **Awesome-World-Models** · [[Paper]](#) [[Code]](https://github.com/knightnemo/Awesome-World-Models)
-
+- **Awesome-From-Video-Generation-to-World-Model** · [[Paper]](https://arxiv.org/pdf/2511.08585) [[Code]](https://github.com/ziqihuangg/Awesome-From-Video-Generation-to-World-Model)
+- **Awesome-Video-World-Models-with-AR-Diffusion** · [[Paper]](#) [[Code]](https://github.com/gracezhao1997/Awesome-Video-World-Models-with-AR-Diffusion)
+- **Awesome-VLA-for-AD**
+<!-- - **** · [[Paper]]() [[Code]]() -->
 </details>
 
 
@@ -160,6 +163,7 @@
 - **MakeAnything** · [[Paper]](https://arxiv.org/pdf/2502.01572) [[Code]](https://github.com/showlab/MakeAnything)
 </details>
 
+
 <details>
 <summary><strong> video camera view editing details</strong></summary>
 
@@ -168,6 +172,7 @@
 - **EgoX** · [[Paper]](https://arxiv.org/pdf/2512.08269) [[Code]](#)
 - **WorldReel** · [[Paper]](https://arxiv.org/pdf/2512.07821) [[Code]](https://github.com/bshfang/WorldReel)
 - **DimensionX** · [[Paper]](https://arxiv.org/pdf/2411.04928) [[Code]](https://github.com/wenqsun/DimensionX)
+- **Context-as-Memory** · [[Paper]](https://arxiv.org/pdf/2506.03141) [[Code]](#)
 </details>
 
 
@@ -201,6 +206,7 @@
 - **WonderWorld** · [[Paper]](https://openaccess.thecvf.com/content/CVPR2025/papers/Yu_WonderWorld_Interactive_3D_Scene_Generation_from_a_Single_Image_CVPR_2025_paper.pdf) [[Code]](https://kovenyu.com/WonderWorld/)
 - **CLONE DETERMINISTIC 3D WORLDS WITH GEOMETRICALLY-REGULARIZED WORLD MODELS** · [[Paper]](http://arxiv.org/pdf/2510.26782v1) [[Code]](#)
 - **NFD** · [[Paper]](https://arxiv.org/pdf/2506.01380) [[Code]](#)
+- **WorldCache** · [[Paper]](https://arxiv.org/pdf/2603.06331) [[Code]](https://github.com/FofGofx/WorldCache)
 </details>
 
 
@@ -299,7 +305,6 @@
 - **EvoWorld** · [[Paper]](https://arxiv.org/pdf/2510.01183) [[Code]](https://github.com/JiahaoPlus/EvoWorld)
 - **omniVGGT** · [[Paper]](https://arxiv.org/pdf/2511.10560) [[Code]](https://github.com/livioni/omnivggt-offcial)
 - **M3arsSynth** · [[Paper]](https://arxiv.org/pdf/2507.07978) [[Code]](https://github.com/loongfeili/Martian-World-Model)
-
 - **Genesis** · [[Paper]](#) [[Code]](https://github.com/Genesis-Embodied-AI/Genesis)
 - **PartCrafter** · [[Paper]](https://arxiv.org/pdf/2506.05573) [[Code]](https://github.com/wgsxm/PartCrafter)
 - **nano3D** · [[Paper]](https://arxiv.org/pdf/2510.15019) [[Code]](https://github.com/JAMESYJL/Nano3D)
@@ -317,6 +322,7 @@
 - **WonderZomom** · [[Paper]](https://arxiv.org/pdf/2512.09164) [[Code]](#)
 - **EchoWorld** · [[Paper]](https://arxiv.org/abs/2504.13065) [[Code]](https://github.com/LeapLabTHU/EchoWorld)
 - **LoGeR** · [[Paper]](https://arxiv.org/pdf/2603.03269) [[Code]](https://github.com/Junyi42/LoGeR)
+- **Utonia** · [[Paper]](https://arxiv.org/pdf/2603.03283) [[Code]](https://github.com/Pointcept/Utonia)
 </details>
 
 
@@ -378,7 +384,7 @@
 
 ---
 
-### World Models-VLA
+### World Model - VLA
 
 #### embodied ai
 
@@ -403,6 +409,8 @@
 - **PhysWorld** · [[Paper]](https://arxiv.org/pdf/2511.07416) [[Code]](#)
 - **RoboTracer** · [[Paper]](https://arxiv.org/abs/2512.13660) [[Code]](https://github.com/Zhoues/RoboTracer)
 - **OSVI-WM** · [[Paper]](https://arxiv.org/pdf/2505.20425) [[Code]](#)
+- **LPWM** · [[Paper]](https://arxiv.org/pdf/2603.04553) [[Code]](https://github.com/taldatech/lpwm)
+- **ACoT-VLA** · [[Paper]](https://arxiv.org/pdf/2601.11404) [[Code]](#)
 </details>
 
 
