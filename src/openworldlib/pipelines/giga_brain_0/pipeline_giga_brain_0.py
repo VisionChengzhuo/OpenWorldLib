@@ -64,6 +64,7 @@ class GigaBrain0Pipeline:
         device: str | torch.device | None = None,
         weight_dtype: torch.dtype | None = None,
         present_img_keys: list[str] | None = None,
+        use_quantiles: bool = True,
         **policy_kwargs: Any,
     ) -> 'GigaBrain0Pipeline':
         """Load the pipeline from pretrained weights.
@@ -116,6 +117,7 @@ class GigaBrain0Pipeline:
             autoregressive_inference_mode=autoregressive_inference_mode,
             text_max_length=200,
             present_img_keys=present_img_keys,
+            use_quantiles=use_quantiles,
         )
         return cls(synthesis=synthesis, operator=operator, embodiment_id=embodiment_id, original_action_dim=original_action_dim, device=device)
 

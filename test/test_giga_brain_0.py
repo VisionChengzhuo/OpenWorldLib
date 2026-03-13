@@ -3,6 +3,7 @@ import os
 
 import matplotlib
 import numpy as np
+from sympy import use
 import torch
 from PIL import Image as PILImage
 
@@ -78,6 +79,7 @@ if __name__ == '__main__':
         device=DEVICE,
         weight_dtype=WEIGHT_DTYPE,
         present_img_keys=['observation.images.cam_high', 'observation.images.cam_wrist'],
+        use_quantiles=False,  
     )
     pipe.compile()
 

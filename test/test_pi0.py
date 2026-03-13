@@ -12,7 +12,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from PIL import Image
 from openworldlib.pipelines.pi0.pipeline_pi0 import PI0Pipeline
 
 TOKENIZER = 'google/paligemma-3b-mix-224'
@@ -29,9 +28,9 @@ CONFIGS = {
                             'observation.images.cam_left_wrist',
                             'observation.images.cam_right_wrist'],
         img_files        = {
-            'observation.images.cam_high':        Image.open('data/test_vla/aloha/observation_images_cam_high.png').convert('RGB'),
-            'observation.images.cam_left_wrist':  Image.open('data/test_vla/aloha/observation_images_cam_left_wrist.png').convert('RGB'),
-            'observation.images.cam_right_wrist': Image.open('data/test_vla/aloha/observation_images_cam_right_wrist.png').convert('RGB'),
+            'observation.images.cam_high':        'data/test_vla/aloha/observation_images_cam_high.png',
+            'observation.images.cam_left_wrist':  'data/test_vla/aloha/observation_images_cam_left_wrist.png',
+            'observation.images.cam_right_wrist': 'data/test_vla/aloha/observation_images_cam_right_wrist.png',
         },
     ),
     'libero': dict(
@@ -43,8 +42,8 @@ CONFIGS = {
         img_keys         = ['observation.images.cam_high',
                             'observation.images.cam_left_wrist'],
         img_files        = {
-            'observation.images.cam_high':       Image.open('data/test_vla/libero/main_view.png').convert('RGB'),
-            'observation.images.cam_left_wrist': Image.open('data/test_vla/libero/wrist_view.png').convert('RGB'),
+            'observation.images.cam_high':       'data/test_vla/libero/main_view.png',
+            'observation.images.cam_left_wrist': 'data/test_vla/libero/wrist_view.png',
         },
     ),
     'droid': dict(
@@ -57,9 +56,9 @@ CONFIGS = {
                             'observation.images.cam_left_wrist',
                             'observation.images.cam_right_wrist'],
         img_files        = {
-            'observation.images.cam_high':        Image.open('data/test_vla/droid/exterior_image_1_left.png').convert('RGB'),
-            'observation.images.cam_left_wrist':  Image.open('data/test_vla/droid/wrist_image_left.png').convert('RGB'),
-            'observation.images.cam_right_wrist': Image.open('data/test_vla/droid/exterior_image_2_left.png').convert('RGB'),
+            'observation.images.cam_high':        'data/test_vla/droid/exterior_image_1_left.png',
+            'observation.images.cam_left_wrist':  'data/test_vla/droid/wrist_image_left.png',
+            'observation.images.cam_right_wrist': 'data/test_vla/droid/exterior_image_2_left.png',
         },
     ),
 }
@@ -105,7 +104,7 @@ def run(name: str, cfg: dict) -> None:
 
     pipe = PI0Pipeline.from_pretrained(
         model_path=cfg['model_path'],
-        tokenizer_model_path=TOKENIZER,
+        required_components={'tokenizer': TOKENIZER},
         state_norm_stats=state_norm,
         action_norm_stats=action_norm,
         original_action_dim=cfg['action_dim'],
