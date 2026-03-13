@@ -156,7 +156,7 @@ Related documents: [[Project Overview]](https://wcny4qa9krto.feishu.cn/wiki/NAy4
 
 
 ### Acknowledgment
-This project is an extension of DataFlow and DataFlow-MM for world model tasks. We are also actively collaborating with RayOrch, Paper2Any, and other projects.
+This project is an extension of [DataFlow](https://github.com/OpenDCAI/DataFlow) and [DataFlow-MM](https://github.com/OpenDCAI/DataFlow-MM) for world model tasks. We are also actively collaborating with [RayOrch](https://github.com/OpenDCAI/RayOrch), [Paper2Any](https://github.com/OpenDCAI/Paper2Any), and other projects.
 
 
 ### Citation

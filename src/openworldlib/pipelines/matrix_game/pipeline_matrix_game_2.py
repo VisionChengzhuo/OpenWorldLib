@@ -8,6 +8,7 @@ from torchvision.transforms import v2
 from ...operators.matrix_game_2_operator import MatrixGame2Operator
 from ...synthesis.visual_generation.matrix_game.matrix_game_2_synthesis import MatrixGame2Synthesis
 from ...memories.visual_synthesis.matrix_game.matrix_game_2_memory import MatrixGame2Memory
+import logging
 
 
 def tensor_to_pil(tensor: torch.Tensor) -> Image.Image:
@@ -24,7 +25,7 @@ class MatrixGame2Pipeline:
                  device: str = "cuda",
                  weight_dtype = torch.bfloat16,
                  ):
-        self.synthesis_model = synthesis_model 
+        self.synthesis_model = synthesis_model
         self.operators = operators
         self.memory_module = memory_module
         self.device = device
@@ -109,7 +110,10 @@ class MatrixGame2Pipeline:
                  num_frames=None,
                  size = (352, 640),
                  visualize_ops=True,
+                 visualize_warning=False,
                  **kwds):
+        if not visualize_warning:
+            logging.getLogger("torch._dynamo").setLevel(logging.ERROR)
         if isinstance(images, Image.Image):
             input_image = images
         else:
@@ -140,7 +144,10 @@ class MatrixGame2Pipeline:
                num_frames: int = 15,
                size = (352, 640),
                visualize_ops: bool = False,
+               visualize_warning=False,
                **kwds) -> torch.Tensor:
+        if not visualize_warning:
+            logging.getLogger("torch._dynamo").setLevel(logging.ERROR)
         if images is not None:
             print("--- Stream Started ---")
             self.memory_module.record(images)

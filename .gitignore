@@ -14,7 +14,7 @@ cache*
 ckpt*
 
 *.log
-*.mp4
+# *.mp4
 
 notes/
 install.sh

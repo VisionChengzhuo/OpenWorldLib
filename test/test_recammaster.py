@@ -15,7 +15,7 @@ def save_video(frames, save_path, fps, quality=9, ffmpeg_params=None):
 pretrained_model_path = "Wan-AI/Wan2.1-T2V-1.3B"
 recammaster_ckpt_path = "KlingTeam/ReCamMaster-Wan2.1"
 
-video_path = "./data/test_video_case1/talking_man.mp4"
+video_path = "./data/test_case/test_video_case1/talking_man.mp4"
 interaction = [100, 100, 0, 0, 30]  # dx, dy, dz, theta_x, theta_z
 textual_prompt = """
 A man in a black suit and a green shirt is standing in a kitchen, engaging in a conversation. 

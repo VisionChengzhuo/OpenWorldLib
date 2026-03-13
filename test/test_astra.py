@@ -16,7 +16,7 @@ def test():
     astra_path = "EvanEternal/Astra" 
     wan_model_path = "Wan-AI/Wan2.1-T2V-1.3B" 
 
-    image_path = "./data/test_case1/ref_image.png"
+    image_path = "./data/test_case/test_image_case1/ref_image.png"
     interaction = {
         "prompt": "A cozy snowy fairy-tale village with thatched cottages covered in thick snow.",
         "direction": ["forward", "camera_l", "camera_r"] # interaction list: forward, backward, left, right, forward_left, s_curve

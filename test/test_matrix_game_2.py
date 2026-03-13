@@ -3,7 +3,7 @@ from PIL import Image
 from openworldlib.pipelines.matrix_game.pipeline_matrix_game_2 import MatrixGame2Pipeline
 
 
-image_path = "./data/test_case1/ref_image.png"
+image_path = "./data/test_case/test_image_case1/ref_image.png"
 input_image = Image.open(image_path).convert('RGB')
 
 pretrained_model_path = "Skywork/Matrix-Game-2.0"
