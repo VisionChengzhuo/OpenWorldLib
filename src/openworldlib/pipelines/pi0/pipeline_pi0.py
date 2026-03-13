@@ -38,6 +38,7 @@ class PI0Pipeline:
         original_action_dim: int = 14,
         discrete_state_input: bool = False,
         device: str | torch.device | None = None,
+        weight_dtype: torch.dtype | None = None,
         present_img_keys: list[str] | None = None,
         robot_type: str = 'aloha',
         use_delta_actions: bool = True,
@@ -53,6 +54,7 @@ class PI0Pipeline:
             original_action_dim: Dimension of the environment's native action space before padding.
             discrete_state_input: If True, enables PI0.5 mode with discrete state input.
             device: Device to run inference on.
+            weight_dtype: Optional dtype to cast model weights to (e.g. torch.bfloat16, torch.float16).
             present_img_keys: List of image keys to use.
             robot_type: One of 'aloha', 'libero', 'droid'.
             use_delta_actions: Whether the model uses delta actions (requires absolute conversion on output).
@@ -60,7 +62,7 @@ class PI0Pipeline:
         Returns:
             PI0Pipeline instance.
         """
-        synthesis = PI0Synthesis.from_pretrained(model_path, device=device, **policy_kwargs)
+        synthesis = PI0Synthesis.from_pretrained(model_path, device=device, weight_dtype=weight_dtype, **policy_kwargs)
         operator = PI0Operator(
             state_norm_stats=state_norm_stats,
             action_norm_stats=action_norm_stats,

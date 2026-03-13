@@ -19,7 +19,7 @@ DEVICE    = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 CONFIGS = {
     'libero': dict(
-        model_path       = 'lerobot/pi05_libero_finetuned',
+        model_path       = 'lerobot/pi05_base',
         norm_stats_path  = 'data/test_vla/libero/pi0_5_norm_stats.json',
         robot_type       = 'libero',
         action_dim       = 7,
@@ -33,7 +33,7 @@ CONFIGS = {
         },
     ),
     'droid': dict(
-        model_path       = 'lerobot/pi0_base',  # replace with pi05_droid checkpoint in practice
+        model_path       = 'lerobot/pi05_base',  # replace with pi05_droid checkpoint in practice
         norm_stats_path  = 'data/test_vla/droid/pi05_norm_states_droid_joint.json',
         robot_type       = 'droid',
         action_dim       = 8,

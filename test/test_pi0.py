@@ -34,7 +34,7 @@ CONFIGS = {
         },
     ),
     'libero': dict(
-        model_path       = 'lerobot/pi0_libero_finetuned',
+        model_path       = 'lerobot/pi0_base',
         norm_stats_path  = 'data/test_vla/libero/pi0_norm_stats.json',
         robot_type       = 'libero',
         action_dim       = 7,
