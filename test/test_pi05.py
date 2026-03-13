@@ -1,7 +1,7 @@
-"""PI0 inference test — Aloha / Libero / DROID.
+"""PI0.5 inference test — Libero / DROID.
 
 Usage:
-    python test/test_pi0.py [--dataset aloha libero droid]
+    python test/test_pi05.py [--dataset libero droid]
 """
 import argparse
 import json
@@ -18,27 +18,13 @@ TOKENIZER = 'google/paligemma-3b-mix-224'
 DEVICE    = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 CONFIGS = {
-    'aloha': dict(
-        model_path       = 'lerobot/pi0_base',
-        norm_stats_path  = 'data/test_vla/aloha/pi0_norm_stats.json',
-        robot_type       = 'aloha',
-        action_dim       = 14,
-        out_path         = 'outputs/pi0_aloha_demo.png',
-        img_keys         = ['observation.images.cam_high',
-                            'observation.images.cam_left_wrist',
-                            'observation.images.cam_right_wrist'],
-        img_files        = {
-            'observation.images.cam_high':        'data/test_vla/aloha/observation_images_cam_high.png',
-            'observation.images.cam_left_wrist':  'data/test_vla/aloha/observation_images_cam_left_wrist.png',
-            'observation.images.cam_right_wrist': 'data/test_vla/aloha/observation_images_cam_right_wrist.png',
-        },
-    ),
     'libero': dict(
-        model_path       = 'lerobot/pi0_libero_finetuned',
-        norm_stats_path  = 'data/test_vla/libero/pi0_norm_stats.json',
+        model_path       = 'lerobot/pi05_libero_finetuned',
+        norm_stats_path  = 'data/test_vla/libero/pi0_5_norm_stats.json',
         robot_type       = 'libero',
         action_dim       = 7,
-        out_path         = 'outputs/pi0_libero_demo.png',
+        use_delta_actions= False,
+        out_path         = 'outputs/pi05_libero_demo.png',
         img_keys         = ['observation.images.cam_high',
                             'observation.images.cam_left_wrist'],
         img_files        = {
@@ -47,11 +33,12 @@ CONFIGS = {
         },
     ),
     'droid': dict(
-        model_path       = 'lerobot/pi0_base',
-        norm_stats_path  = 'data/test_vla/droid/pi0_norm_states_droid_joint.json',
+        model_path       = 'lerobot/pi0_base',  # replace with pi05_droid checkpoint in practice
+        norm_stats_path  = 'data/test_vla/droid/pi05_norm_states_droid_joint.json',
         robot_type       = 'droid',
         action_dim       = 8,
-        out_path         = 'outputs/pi0_droid_demo.png',
+        use_delta_actions= True,
+        out_path         = 'outputs/pi05_droid_demo.png',
         img_keys         = ['observation.images.cam_high',
                             'observation.images.cam_left_wrist',
                             'observation.images.cam_right_wrist'],
@@ -65,9 +52,6 @@ CONFIGS = {
 
 
 def load_data(name):
-    if name == 'aloha':
-        d = json.load(open('data/test_vla/aloha/state.json'))
-        return torch.tensor(d['observation.state'], dtype=torch.float32), 'perform the task'
     if name == 'libero':
         d = json.load(open('data/test_vla/libero/meta.json'))
         return torch.tensor(d['observation']['state'], dtype=torch.float32), d['task']
@@ -108,11 +92,11 @@ def run(name: str, cfg: dict) -> None:
         state_norm_stats=state_norm,
         action_norm_stats=action_norm,
         original_action_dim=cfg['action_dim'],
-        discrete_state_input=False,
+        discrete_state_input=True,
         device=DEVICE,
         present_img_keys=cfg['img_keys'],
         robot_type=cfg['robot_type'],
-        use_delta_actions=True,
+        use_delta_actions=cfg['use_delta_actions'],
     )
     pipe.compile()
 

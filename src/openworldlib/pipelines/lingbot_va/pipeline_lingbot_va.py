@@ -114,7 +114,7 @@ class LingBotVAPipeline:
 
     def process(
         self,
-        images: dict[str, PILImage.Image],
+        images: dict[str, str | PILImage.Image],
         prompt: str,
     ) -> dict[str, Any]:
         """Preprocess inputs using the operator."""
@@ -128,7 +128,7 @@ class LingBotVAPipeline:
     @torch.no_grad()
     def __call__(
         self,
-        images: dict[str, PILImage.Image],
+        images: dict[str, str | PILImage.Image],
         prompt: str,
         num_chunks: int = 10,
         decode_video: bool = False,

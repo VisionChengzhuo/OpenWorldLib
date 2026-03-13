@@ -1,6 +1,7 @@
 from typing import Any
 
 import torch
+from PIL import Image as PILImage
 
 from ...operators.pi0_operator import PI0Operator
 from ...synthesis.vla_generation.pi0.pi0_synthesis import PI0Synthesis
@@ -89,7 +90,7 @@ class PI0Pipeline:
 
     def process(
         self,
-        images: dict[str, torch.Tensor],
+        images: dict[str, str | PILImage.Image],
         task: str,
         state: torch.Tensor,
         add_batch_dim: bool = True,
@@ -97,7 +98,7 @@ class PI0Pipeline:
         """Preprocess inputs (perception + interaction) to build model-ready tensors.
         
         Expects single-sample inputs (no batch dimension):
-          - images: dict of (C, H, W) tensors
+          - images: dict mapping image key -> file path (str) or PIL.Image
           - task: str
           - state: (state_dim,) tensor
         """
@@ -129,14 +130,14 @@ class PI0Pipeline:
     @torch.no_grad()
     def __call__(
         self,
-        images: dict[str, torch.Tensor],
+        images: dict[str, str | PILImage.Image],
         task: str,
         state: torch.Tensor,
     ) -> torch.Tensor:
         """Run one forward pass from raw inputs to final action sequence.
 
         Args:
-            images: Observation images of the robot. Each value is a tensor with shape (C,H,W).
+            images: Observation images of the robot. Each value is a file path (str) or PIL.Image.
             task: Natural language task description.
             state: The robot joint state tensor with shape (state_dim,).
 

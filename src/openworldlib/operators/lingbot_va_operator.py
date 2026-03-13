@@ -90,12 +90,12 @@ class LingBotVAOperator(BaseOperator):
 
     def process_perception(
         self,
-        images: dict[str, PILImage.Image],
+        images: dict[str, str | PILImage.Image],
     ) -> list[torch.Tensor]:
         """Preprocess multi-view observation images: resize + normalize to [-1, 1].
 
         Args:
-            images: dict mapping camera key -> PIL.Image for a single timestep.
+            images: dict mapping camera key -> file path (str) or PIL.Image for a single timestep.
 
         Returns:
             List of [1, C, 1, H, W] tensors, one per camera view.
@@ -112,8 +112,13 @@ class LingBotVAOperator(BaseOperator):
             else:
                 height_i, width_i = config.height, config.width
 
+            img = images[k]
+            # Load from file path if a string is given
+            if isinstance(img, str):
+                img = PILImage.open(img).convert('RGB')
+
             frames = torch.from_numpy(
-                np.array(images[k].convert('RGB'))
+                np.array(img.convert('RGB'))
             ).float().unsqueeze(0).permute(3, 0, 1, 2)  # C, 1, H, W
             frames = F.interpolate(frames, size=(height_i, width_i), mode='bilinear', align_corners=False)
             frames = frames.unsqueeze(0)  # 1, C, 1, H, W
