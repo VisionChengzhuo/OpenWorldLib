@@ -723,25 +723,57 @@ class VGGTPipeline:
         camera_cfg: Dict[str, Any],
         interaction: str,
         camera_range: Dict[str, Any],
-        yaw_step: float = 10.0,
-        pitch_step: float = 7.5,
-        zoom_factor: float = 0.9,
+        yaw_step: float = 22.0,
+        pitch_step: float = 15.0,
+        zoom_factor: float = 0.88,
     ) -> Dict[str, Any]:
+        """
+        Map interaction token to camera delta. Uses unified 3D schema (forward, left, camera_*)
+        and legacy names (move_left, zoom_in). Default steps are large for visible motion.
+        """
         yaw = float(camera_cfg.get("yaw", 0.0))
         pitch = float(camera_cfg.get("pitch", 0.0))
         radius = float(camera_cfg.get("radius", 4.0))
+        sig = interaction.strip().lower()
 
-        if interaction in ["move_left", "rotate_left"]:
+        # Yaw (left/right)
+        if sig in ["move_left", "rotate_left", "left", "camera_l"]:
             yaw -= yaw_step
-        elif interaction in ["move_right", "rotate_right"]:
+        elif sig in ["move_right", "rotate_right", "right", "camera_r"]:
             yaw += yaw_step
-        elif interaction == "move_up":
+        elif sig in ["camera_ul"]:
+            yaw -= yaw_step
             pitch += pitch_step
-        elif interaction == "move_down":
+        elif sig in ["camera_ur"]:
+            yaw += yaw_step
+            pitch += pitch_step
+        elif sig in ["camera_dl"]:
+            yaw -= yaw_step
             pitch -= pitch_step
-        elif interaction == "zoom_in":
+        elif sig in ["camera_dr"]:
+            yaw += yaw_step
+            pitch -= pitch_step
+        # Pitch (up/down)
+        elif sig in ["move_up", "camera_up"]:
+            pitch += pitch_step
+        elif sig in ["move_down", "camera_down"]:
+            pitch -= pitch_step
+        # Radius (forward/backward, zoom)
+        elif sig in ["forward", "zoom_in", "camera_zoom_in"]:
             radius *= zoom_factor
-        elif interaction == "zoom_out":
+        elif sig in ["backward", "zoom_out", "camera_zoom_out"]:
+            radius /= zoom_factor
+        elif sig == "forward_left":
+            yaw -= yaw_step
+            radius *= zoom_factor
+        elif sig == "forward_right":
+            yaw += yaw_step
+            radius *= zoom_factor
+        elif sig == "backward_left":
+            yaw -= yaw_step
+            radius /= zoom_factor
+        elif sig == "backward_right":
+            yaw += yaw_step
             radius /= zoom_factor
 
         camera_cfg["yaw"] = max(camera_range["yaw_min"], min(camera_range["yaw_max"], yaw))
@@ -754,12 +786,12 @@ class VGGTPipeline:
         camera_cfg: Dict[str, Any],
         interaction: str,
         camera_range: Dict[str, Any],
-        yaw_step: float = 10.0,
-        pitch_step: float = 7.5,
-        zoom_factor: float = 0.9,
+        yaw_step: float = 22.0,
+        pitch_step: float = 15.0,
+        zoom_factor: float = 0.88,
     ) -> Dict[str, Any]:
         """
-        Public wrapper for camera update with interaction signals.
+        Public wrapper for camera update with interaction signals (unified schema + legacy names).
         """
         return self._apply_interaction_to_camera(
             camera_cfg=camera_cfg,
@@ -806,8 +838,9 @@ class VGGTPipeline:
 
     def run_two_stage_3dgs_video(
         self,
-        data_path: Union[str, np.ndarray, List[str], List[np.ndarray]],
-        interaction: Optional[Union[str, List[str]]] = None,
+        image_path: Union[str, np.ndarray, List[str], List[np.ndarray]],
+        interactions: Optional[Union[str, List[str]]] = None,
+        frames_per_interaction: int = 10,
         output_dir: str = "./vggt_output",
         point_conf_threshold: float = 0.2,
         resolution: int = 518,
@@ -816,6 +849,7 @@ class VGGTPipeline:
         camera_yaw: float = 0.0,
         camera_pitch: float = 0.0,
         camera_view: Optional[List[float]] = None,
+        camera_trajectory: Any = None,
         image_width: int = 704,
         image_height: int = 480,
         output_name: str = "vggt_3dgs_demo.mp4",
@@ -823,7 +857,7 @@ class VGGTPipeline:
     ) -> str:
         os.makedirs(output_dir, exist_ok=True)
         recon_info = self.reconstruct_ply(
-            input_=data_path,
+            input_=image_path,
             ply_path=output_dir,
             interaction=None,
             point_conf_threshold=point_conf_threshold,
@@ -849,7 +883,12 @@ class VGGTPipeline:
         )
 
         output_video_path = os.path.join(output_dir, output_name)
-        interaction_sequence = self._normalize_interaction_sequence(interaction)
+        interaction_sequence = self._normalize_interaction_sequence(interactions)
+        # Each interaction token is repeated frames_per_interaction times (e.g. 10 frames per action).
+        if interaction_sequence and frames_per_interaction > 1:
+            interaction_sequence = [
+                a for a in interaction_sequence for _ in range(frames_per_interaction)
+            ]
         if interaction_sequence:
             self.render_interaction_video_with_3dgs(
                 ply_path=ply_path,
@@ -875,12 +914,14 @@ class VGGTPipeline:
     def run_stage2_3dgs_video_from_reconstruction(
         self,
         recon_info: Dict[str, Any],
-        interaction: Optional[Union[str, List[str]]] = None,
+        interactions: Optional[Union[str, List[str]]] = None,
+        frames_per_interaction: int = 10,
         output_dir: str = "./vggt_output",
         camera_radius: Optional[float] = None,
         camera_yaw: float = 0.0,
         camera_pitch: float = 0.0,
         camera_view: Optional[List[float]] = None,
+        camera_trajectory: Any = None,
         image_width: int = 704,
         image_height: int = 480,
         output_name: str = "vggt_3dgs_demo.mp4",
@@ -908,7 +949,7 @@ class VGGTPipeline:
         )
 
         output_video_path = os.path.join(output_dir, output_name)
-        interaction_sequence = self._normalize_interaction_sequence(interaction)
+        interaction_sequence = self._normalize_interaction_sequence(interactions)
         if interaction_sequence:
             self.render_interaction_video_with_3dgs(
                 ply_path=ply_path,
@@ -933,7 +974,7 @@ class VGGTPipeline:
 
     def run_two_stage_3dgs_stream_cli(
         self,
-        data_path: Union[str, np.ndarray, List[str], List[np.ndarray]],
+        image_path: Union[str, np.ndarray, List[str], List[np.ndarray]],
         output_dir: str = "./vggt_stream_output",
         point_conf_threshold: float = 0.2,
         resolution: int = 518,
@@ -945,7 +986,7 @@ class VGGTPipeline:
     ) -> str:
         os.makedirs(output_dir, exist_ok=True)
         recon_info = self.reconstruct_ply(
-            input_=data_path,
+            input_=image_path,
             ply_path=output_dir,
             interaction=None,
             point_conf_threshold=point_conf_threshold,
@@ -953,15 +994,13 @@ class VGGTPipeline:
             preprocess_mode=preprocess_mode,
         )
 
+        # Unified 3D schema (same as operator); legacy names still supported in _apply_interaction_to_camera
         available_interactions = [
-            "move_left",
-            "move_right",
-            "move_up",
-            "move_down",
-            "zoom_in",
-            "zoom_out",
-            "rotate_left",
-            "rotate_right",
+            "forward", "backward", "left", "right",
+            "forward_left", "forward_right", "backward_left", "backward_right",
+            "camera_up", "camera_down", "camera_l", "camera_r",
+            "camera_ul", "camera_ur", "camera_dl", "camera_dr",
+            "camera_zoom_in", "camera_zoom_out",
         ]
 
         ply_path = recon_info["ply_path"]
@@ -1017,14 +1056,14 @@ class VGGTPipeline:
                 continue
 
             for sig in current_signal:
-                for _ in range(frame_units * 6):
+                for _ in range(frame_units):
                     camera_cfg = self._apply_interaction_to_camera(
                         camera_cfg,
                         sig,
                         camera_range,
-                        yaw_step=2.0,
-                        pitch_step=1.5,
-                        zoom_factor=0.98,
+                        yaw_step=22.0,
+                        pitch_step=15.0,
+                        zoom_factor=0.88,
                     )
                     frame = self.render_with_3dgs(
                         ply_path=ply_path,
@@ -1046,59 +1085,50 @@ class VGGTPipeline:
     
     def stream(
         self,
-        input_: Union[str, np.ndarray, List[str], List[np.ndarray]],
-        interaction: Optional[Union[str, Dict[str, Any]]] = None,
+        image_path: Optional[Union[str, List[str]]] = None,
+        images: Any = None,
+        interactions: Optional[List[str]] = None,
         task_type: Optional[str] = None,
-        **kwargs,
+        **kwargs
     ):
         """
-        Stream interface.
-
-        task_type:
-            - \"vggt_two_stage_3dgs_stream_cli\": run interactive two-stage CLI stream,
-              ignoring generator semantics (side-effect only, returns output_video_path).
-            - None / other: fallback to one-shot process() and yield image tensors.
+        Stream interface. Input: image_path or images; interactions (for fallback process).
+        task_type: \"vggt_two_stage_3dgs_stream_cli\" -> output_video_path; else yield image tensors.
         """
+        data = images if images is not None else image_path
+        if data is None:
+            raise ValueError("Provide image_path or images.")
         if task_type == "vggt_two_stage_3dgs_stream_cli":
-            # Delegate to high-level interactive helper; ignore interaction/kwargs other than config.
-            return self.run_two_stage_3dgs_stream_cli(
-                data_path=input_,
-                **kwargs,
-            )
+            return self.run_two_stage_3dgs_stream_cli(image_path=data, **kwargs)
 
-        # Fallback: simple process() and yield images as tensors (backward compatible).
-        result = self.process(input_, interaction=interaction, **kwargs)
+        result = self.process(input_=data, interaction=interactions, **kwargs)
         for img in result.images:
             yield torch.from_numpy(np.array(img))
     
     def __call__(
         self,
-        input_: Union[str, np.ndarray, List[str], List[np.ndarray]],
-        interaction: Optional[Union[str, Dict[str, Any], List[str]]] = None,
+        image_path: Optional[Union[str, List[str]]] = None,
+        images: Any = None,
+        interactions: Optional[List[str]] = None,
+        camera_view: Optional[List[float]] = None,
         task_type: Optional[str] = None,
         **kwargs
     ) -> Union[VGGTResult, str]:
         """
-        Main call interface for the pipeline.
-
-        task_type:
-            - None or \"vggt_base\": direct VGGT representation/process (returns VGGTResult)
-            - \"vggt_two_stage_3dgs\": run two-stage reconstruction + 3DGS video
-              (returns output_video_path: str)
+        Main call interface. Input: image_path or images; interactions; camera_view (5D, for two-stage).
+        task_type: None | \"vggt_base\" -> VGGTResult; \"vggt_two_stage_3dgs\" -> output_video_path (str).
         """
+        data = images if images is not None else image_path
+        if data is None:
+            raise ValueError("Provide image_path or images.")
         if task_type == "vggt_two_stage_3dgs":
             return self.run_two_stage_3dgs_video(
-                data_path=input_,
-                interaction=interaction,
+                image_path=data,
+                interactions=interactions,
+                camera_view=camera_view,
                 **kwargs,
             )
-
-        # Default: one-stage VGGT representation.
-        return self.process(
-            input_=input_,
-            interaction=interaction,
-            **kwargs,
-        )
+        return self.process(input_=data, interaction=interactions, **kwargs)
 
 
 __all__ = ["VGGTPipeline", "VGGTResult"]

@@ -10,7 +10,7 @@ OUTPUT_DIR = "./vggt_output"
 
 # Interactions follow unified 3D schema, e.g.:
 # ["forward", "left", "camera_zoom_in"]
-INTERACTION = ["left", "camera_zoom_in"]
+INTERACTIONS = ["left", "camera_zoom_in"]
 
 # camera_view: [dx, dy, dz, theta_x, theta_z]
 CAMERA_VIEW = None
@@ -28,8 +28,8 @@ pipeline = VGGTPipeline.from_pretrained(
 )
 
 output_video_path = pipeline(
-    DATA_PATH,
-    interaction=INTERACTION,
+    image_path=DATA_PATH,
+    interactions=INTERACTIONS,
     task_type="vggt_two_stage_3dgs",
     output_dir=OUTPUT_DIR,
     point_conf_threshold=POINT_CONF_THRESHOLD,

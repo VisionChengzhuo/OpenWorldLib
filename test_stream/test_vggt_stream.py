@@ -22,7 +22,7 @@ pipeline = VGGTPipeline.from_pretrained(
 )
 
 output_video_path = pipeline.stream(
-    DATA_PATH,
+    image_path=DATA_PATH,
     task_type="vggt_two_stage_3dgs_stream_cli",
     output_dir=OUTPUT_DIR,
     point_conf_threshold=POINT_CONF_THRESHOLD,
