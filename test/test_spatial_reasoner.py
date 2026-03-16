@@ -38,7 +38,7 @@ def test_spatial_reasoner_pipeline_pil_image():
     instruction = "Describe the scene."
     output = pipe(
         instruction=instruction,
-        image_inputs=pil_image,
+        images=pil_image,
         max_new_tokens=64,
     )
     assert isinstance(output, list) and len(output) == 1
@@ -56,7 +56,7 @@ def test_spatial_reasoner_pipeline_pil_video():
     instruction = "Summarize the video content."
     output = pipe(
         instruction=instruction,
-        video_inputs=frames,
+        videos=frames,
         max_new_tokens=64,
     )
     assert isinstance(output, list) and len(output) == 1
