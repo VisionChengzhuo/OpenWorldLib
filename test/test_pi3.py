@@ -27,11 +27,18 @@ print(f"Input: {DATA_PATH}")
 print(f"Views: {result.camera_range['num_views']}")
 print(f"Camera range: {result.camera_range}")
 
-rendered = pipeline(task_type="render_view", view_index=0)
+rendered = pipeline(task_type="render_view", camera_view=0)
 rendered.save(os.path.join(OUTPUT_DIR, "render_default.png"))
 
-rendered = pipeline(task_type="render_view", interactions=["forward", "left", "camera_r"])
-rendered.save(os.path.join(OUTPUT_DIR, "render_interact.png"))
+interact_frames = pipeline(task_type="render_view", interactions=["forward", "left", "camera_r"])
+interact_video_path = os.path.join(OUTPUT_DIR, "interaction_video.mp4")
+interact_video = cv2.VideoWriter(
+    interact_video_path, cv2.VideoWriter_fourcc(*"mp4v"), 15, interact_frames[0].size,
+)
+for f in interact_frames:
+    interact_video.write(cv2.cvtColor(np.array(f), cv2.COLOR_RGB2BGR))
+interact_video.release()
+print(f"Interaction video saved: {interact_video_path} ({len(interact_frames)} frames)")
 
 frames = pipeline(task_type="render_trajectory")
 video_path = os.path.join(OUTPUT_DIR, "trajectory_video.mp4")
