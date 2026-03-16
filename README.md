@@ -11,8 +11,70 @@
 
 [English](README.md) | [中文](README_zh.md)
 
-Extension repo：[[3D generation]](https://github.com/zengbohan0217/OpenWorldLib-extension-3D) | [[VLA]]() | [[simulator]]()
+Extension repo：[[3D generation]](https://github.com/zengbohan0217/OpenWorldLib-extension-3D) | [[VLA]](https://github.com/yfanDai/OpenWorldLib-extension-VLA) | [[simulator]](https://github.com/YF0224/OpenWorldLib-extension-Simulator)
 
+</div>
+
+<!-- add demo -->
+<div align="center">
+<table>
+<tr>
+  <td align="center">
+    <img src="https://github.com/user-attachments/assets/1c328d17-ef94-4d53-8dc2-f77ec3964a74" width="218" height="120"><br/>
+    <b>Matrix-Game-2</b>
+  </td>
+  <td align="center">
+    <img src="https://github.com/user-attachments/assets/2fac45f5-d365-4794-bf38-45aee58f3d45" width="218" height="120"><br/>
+    <b>Hunyuan-GameCraft</b>
+  </td>
+  <td align="center">
+    <img src="https://github.com/user-attachments/assets/c594ac11-1fc7-45da-ab2e-426e66e927f6" width="218" height="120"><br/>
+    <b>Hunyuan-Worldplay</b>
+  </td>
+</tr>
+<tr>
+  <td align="center">
+    <img src="https://github.com/user-attachments/assets/e07456a3-869a-408c-9755-abe896f51c0e" width="218" height="120"><br/>
+    <b>Lingbot-World</b>
+  </td>
+  <td align="center">
+    <img src="https://github.com/user-attachments/assets/ae38060b-f82f-48b1-89b5-6344e85e8354" width="218" height="120"><br/>
+    <b>YUME-1.5</b>
+  </td>
+  <td align="center">
+    <img src="https://github.com/user-attachments/assets/c6b176fd-1ebe-4760-ab2f-6f2ba20445ca" width="218" height="120"><br/>
+    <b>FlashWorld</b>
+  </td>
+</tr>
+<tr>
+  <td align="center">
+    <img src="https://github.com/user-attachments/assets/c4fa5245-e837-4e47-a4e4-585a61358f91" width="218" height="120"><br/>
+    <b>Wan-2.2</b>
+  </td>
+  <td align="center">
+    <img src="https://github.com/user-attachments/assets/a47b2e0e-b62c-45fb-bb99-6377f53e3f5e" width="218" height="120"><br/>
+    <b>WoW</b>
+  </td>
+  <td align="center">
+    <img src="https://github.com/user-attachments/assets/c8ec425d-3815-4652-b2af-7e3c06e76b72" width="218" height="120"><br/>
+    <b>Cosmos-Predict-2.5</b>
+  </td>
+</tr>
+<tr>
+  <td align="center">
+    <img src="https://github.com/user-attachments/assets/68c59c52-35c5-400c-a5a0-94c8eb802a79" width="218" height="120"><br/>
+    <b>Pi3</b>
+  </td>
+  <td align="center">
+    <img src="https://github.com/user-attachments/assets/dab9c489-fcb8-412d-99af-9fdad4e76e0e" width="120" height="120"><br/>
+    <b>Libero</b>
+  </td>
+  <td align="center">
+    <img src="https://github.com/user-attachments/assets/f8b4253b-9172-4afa-bd0e-ae0bc7ea8b25" width="120" height="120"><br/>
+    <b>Ai2-THOR</b>
+  </td>
+</tr>
+</table>
 </div>
 
 
@@ -20,7 +82,6 @@ We define a world model as: **A model or framework centered on perception, equip
 
 We warmly welcome researchers to share their views on this framework or thoughts on world models in the Issues section. We also hope that you can submit valuable world-model-related methods to our framework via Pull Requests, or document and submit them to [[awesome_world_models]](docs/awesome_world_model.md). Feel free to give our repo a star 🌟 to follow the latest progress of OpenWorldLib!
 
-<!-- the demonstration demo insert here -->
 
 ### Important Docs <!-- omit in toc -->
 The following three documents are essential to this project (click to navigate):
@@ -51,7 +112,7 @@ The main goals of OpenWorldLib include:
 - Integrating open-source world model research outcomes and systematically curating related papers for researchers' reference and use.
 
 #### Supported Tasks
-OpenWorldLib covers the following research directions related to **World Models**:
+OpenWorldLib covers the following research directions related to **World Models**, **We sincerely thank all the excellent methods included in this framework for their significant contributions to world model**:
 
 | Task Category | Sub-task | Representative Methods/Models |
 | :--- | :--- | :--- |
