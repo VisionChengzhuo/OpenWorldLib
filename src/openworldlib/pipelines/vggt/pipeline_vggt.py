@@ -124,7 +124,7 @@ class VGGTPipeline:
     ) -> VGGTResult:
         if self.representation_model is None:
             raise RuntimeError("Representation model not loaded. Use from_pretrained() first.")
-        
+
         images_data = self.operator.process_perception(input_)
         if not isinstance(images_data, list):
             images_data = [images_data]
@@ -209,6 +209,90 @@ class VGGTPipeline:
         )
 
     @staticmethod
+    def _to_uint8_rgb(frame: Union[Image.Image, np.ndarray]) -> np.ndarray:
+        if isinstance(frame, Image.Image):
+            arr = np.array(frame.convert("RGB"))
+        else:
+            arr = np.asarray(frame)
+            if arr.ndim == 2:
+                arr = np.stack([arr, arr, arr], axis=-1)
+            if arr.shape[-1] == 4:
+                arr = arr[..., :3]
+            if arr.dtype != np.uint8:
+                arr = np.clip(arr, 0.0, 255.0)
+                if arr.max() <= 1.0:
+                    arr = arr * 255.0
+                arr = arr.astype(np.uint8)
+        return np.ascontiguousarray(arr[..., :3])
+
+    def _export_video(
+        self,
+        frames: List[Union[Image.Image, np.ndarray]],
+        output_path: str,
+        fps: int = 12,
+    ) -> str:
+        if len(frames) == 0:
+            raise RuntimeError("No frames to export.")
+
+        os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+        frames_u8 = [self._to_uint8_rgb(f) for f in frames]
+
+        # Some encoders/players can fail with a single-frame mp4.
+        if len(frames_u8) == 1:
+            frames_u8 = [frames_u8[0], frames_u8[0]]
+
+        # Save first frame as a simple preview image.
+        first_frame_path = os.path.join(os.path.dirname(output_path), "first_frame.png")
+        Image.fromarray(frames_u8[0]).save(first_frame_path)
+
+        export_to_video(frames_u8, output_path, fps=fps)
+        return output_path
+
+    @staticmethod
+    def _normalize_interaction_sequence(
+        interaction: Optional[Union[str, List[str]]]
+    ) -> List[str]:
+        if interaction is None:
+            return []
+        if isinstance(interaction, str):
+            return [interaction]
+        return [str(sig) for sig in interaction if str(sig).strip()]
+
+    @staticmethod
+    def _apply_camera_view_to_camera_cfg(
+        camera_cfg: Dict[str, Any],
+        camera_view: Optional[List[float]],
+        camera_range: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        camera_view: [dx, dy, dz, theta_x, theta_z]
+        dx,dy,dz: center offset in world space
+        theta_x: pitch offset (deg)
+        theta_z: yaw offset (deg)
+        """
+        if camera_view is None:
+            return camera_cfg
+
+        if len(camera_view) != 5:
+            raise ValueError(f"camera_view must be a 5D vector [dx,dy,dz,theta_x,theta_z], got {camera_view}")
+
+        dx, dy, dz, theta_x, theta_z = camera_view
+        center = np.asarray(camera_cfg.get("center", [0.0, 0.0, 0.0]), dtype=np.float32)
+        center = center + np.array([dx, dy, dz], dtype=np.float32)
+
+        yaw = float(camera_cfg.get("yaw", 0.0) + theta_z)
+        pitch = float(camera_cfg.get("pitch", 0.0) + theta_x)
+
+        if camera_range is not None:
+            yaw = max(camera_range["yaw_min"], min(camera_range["yaw_max"], yaw))
+            pitch = max(camera_range["pitch_min"], min(camera_range["pitch_max"], pitch))
+
+        camera_cfg["center"] = center.tolist()
+        camera_cfg["yaw"] = yaw
+        camera_cfg["pitch"] = pitch
+        return camera_cfg
+
+    @staticmethod
     def _resize_colors_to_pointmap(
         colors: List[np.ndarray],
         n_views: int,
@@ -229,7 +313,7 @@ class VGGTPipeline:
         self,
         input_: Union[str, np.ndarray, List[str], List[np.ndarray]],
         ply_path: Optional[str] = None,
-        interaction: str = "point_cloud_generation",
+        interaction: Optional[Union[str, Dict[str, Any]]] = None,
         point_conf_threshold: float = 0.2,
         resolution: int = 518,
         preprocess_mode: str = "crop",
@@ -243,19 +327,27 @@ class VGGTPipeline:
             - camera_range
             - default_camera
         """
+        # For VGGT, reconstruction requires cameras, depth, and points.
+        # We bypass interaction strings here and directly request these predictions.
+        interaction_dict: Dict[str, Any] = {
+            "predict_cameras": True,
+            "predict_depth": True,
+            "predict_points": True,
+            "predict_tracks": False,
+        }
+
         result = self.process(
             input_=input_,
-            interaction=interaction,
+            interaction=interaction_dict,
             return_visualization=False,
             resolution=resolution,
             preprocess_mode=preprocess_mode,
         )
 
-        point_map_key = "point_map_from_depth" if "point_map_from_depth" in result.numpy_data else "point_map"
-        if point_map_key not in result.numpy_data:
-            raise RuntimeError("VGGT output does not contain point_map or point_map_from_depth.")
+        if "point_map" not in result.numpy_data:
+            raise RuntimeError("VGGT output does not contain point_map.")
 
-        point_map = np.asarray(result.numpy_data[point_map_key])
+        point_map = np.asarray(result.numpy_data["point_map"])
         if point_map.ndim == 3:
             point_map = point_map[None, ...]
         if point_map.ndim != 4 or point_map.shape[-1] != 3:
@@ -316,9 +408,10 @@ class VGGTPipeline:
             "pitch_max": 75.0,
         }
 
+        # Default view distance: 1.0 = closer (was 1.5).
         default_camera = {
             "center": center.tolist(),
-            "radius": radius * 1.5,
+            "radius": radius * 1.0,
             "yaw": 0.0,
             "pitch": 0.0,
         }
@@ -328,26 +421,6 @@ class VGGTPipeline:
             "camera_range": camera_range,
             "default_camera": default_camera,
         }
-
-    @staticmethod
-    def _estimate_gaussian_scale(points: np.ndarray, scene_center: np.ndarray) -> float:
-        if len(points) < 4:
-            scene_radius = float(np.linalg.norm(points - scene_center[None, :], axis=1).max() + 1e-8)
-            return max(scene_radius / 2000.0, 1e-4)
-
-        sample_n = min(len(points), 2048)
-        rng = np.random.default_rng(42)
-        idx = rng.choice(len(points), size=sample_n, replace=False)
-        sample = torch.from_numpy(points[idx]).float()
-        dist = torch.cdist(sample, sample, p=2)
-        dist.fill_diagonal_(1e9)
-        nn = dist.min(dim=1).values
-        nn_med = float(nn.median().item())
-
-        scene_radius = float(np.linalg.norm(points - scene_center[None, :], axis=1).max() + 1e-8)
-        min_scale = max(scene_radius / 5000.0, 1e-4)
-        max_scale = max(scene_radius / 300.0, min_scale)
-        return float(np.clip(nn_med * 0.6, min_scale, max_scale))
 
     def render_with_3dgs(
         self,
@@ -359,79 +432,20 @@ class VGGTPipeline:
         near_plane: float = 0.01,
         far_plane: float = 1000.0,
     ) -> Image.Image:
-        device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-        pcd = fetchPly(ply_path)
-        points = np.asarray(pcd.points, dtype=np.float32)
-        colors = np.asarray(pcd.colors, dtype=np.float32)
-        if points.size == 0:
-            raise RuntimeError(f"No points loaded from PLY: {ply_path}")
-
-        center = np.asarray(camera_config.get("center", points.mean(axis=0)), dtype=np.float32)
-        radius = float(camera_config.get("radius", 1.5 * np.linalg.norm(points - center[None, :], axis=1).max()))
-        yaw_deg = float(camera_config.get("yaw", 0.0))
-        pitch_deg = float(camera_config.get("pitch", 0.0))
-
-        yaw = np.deg2rad(yaw_deg)
-        pitch = np.deg2rad(pitch_deg)
-        cam_x = center[0] + radius * np.cos(pitch) * np.sin(yaw)
-        cam_y = center[1] + radius * np.sin(pitch)
-        cam_z = center[2] + radius * np.cos(pitch) * np.cos(yaw)
-        cam_pos = np.array([cam_x, cam_y, cam_z], dtype=np.float32)
-
-        forward = center - cam_pos
-        forward = forward / (np.linalg.norm(forward) + 1e-8)
-        up = np.array([0.0, 1.0, 0.0], dtype=np.float32)
-        right = np.cross(forward, up)
-        right = right / (np.linalg.norm(right) + 1e-8)
-        up = np.cross(right, forward)
-        up = up / (np.linalg.norm(up) + 1e-8)
-
-        c2w = np.eye(4, dtype=np.float32)
-        c2w[0, :3] = right
-        c2w[1, :3] = up
-        c2w[2, :3] = forward
-        c2w[:3, 3] = cam_pos
-
-        fx = 0.5 * image_width / np.tan(np.deg2rad(60.0) / 2.0)
-        fy = 0.5 * image_height / np.tan(np.deg2rad(45.0) / 2.0)
-        cx = image_width / 2.0
-        cy = image_height / 2.0
-
-        xyz = torch.from_numpy(points).to(device=device, dtype=torch.float32)
-        scale_value = self._estimate_gaussian_scale(points, center)
-        scale = torch.full((xyz.shape[0], 3), scale_value, device=device, dtype=torch.float32)
-        rotation = torch.zeros((xyz.shape[0], 4), device=device, dtype=torch.float32)
-        rotation[:, 0] = 1.0
-        opacity = torch.full((xyz.shape[0], 1), 0.95, device=device, dtype=torch.float32)
-        color_tensor = torch.from_numpy(np.clip(colors, 0.0, 1.0)).to(device=device, dtype=torch.float32)
-
-        gaussian_params = torch.cat([xyz, opacity, scale, rotation, color_tensor], dim=-1).unsqueeze(0)
-        test_c2ws = torch.from_numpy(c2w).unsqueeze(0).unsqueeze(0).to(device=device, dtype=torch.float32)
-        intr = torch.tensor([[fx, fy, cx, cy]], dtype=torch.float32, device=device).unsqueeze(0)
-
-        rgb, _ = gaussian_render(
-            gaussian_params,
-            test_c2ws,
-            intr,
-            image_width,
-            image_height,
+        """
+        Thin wrapper: delegate 3DGS rendering to VGGTRepresentation.
+        """
+        if self.representation_model is None:
+            raise RuntimeError("Representation model not loaded. Use from_pretrained() first.")
+        return self.representation_model.render_with_3dgs(
+            ply_path=ply_path,
+            camera_config=camera_config,
+            image_width=image_width,
+            image_height=image_height,
+            device=device,
             near_plane=near_plane,
             far_plane=far_plane,
-            use_checkpoint=False,
-            sh_degree=0,
-            bg_mode="white",
         )
-
-        rgb_img = rgb[0, 0].clamp(-1.0, 1.0).add(1.0).div(2.0)
-        rgb_np = (
-            rgb_img.mul(255.0)
-            .permute(1, 2, 0)
-            .detach()
-            .cpu()
-            .numpy()
-            .astype(np.uint8)
-        )
-        return Image.fromarray(rgb_np)
 
     def render_orbit_video_with_3dgs(
         self,
@@ -467,8 +481,7 @@ class VGGTPipeline:
             )
 
         if output_path is not None and len(frames) > 0:
-            os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
-            export_to_video([np.array(f) for f in frames], output_path, fps=fps)
+            self._export_video(frames, output_path, fps=fps)
         return frames
 
     @staticmethod
@@ -476,25 +489,57 @@ class VGGTPipeline:
         camera_cfg: Dict[str, Any],
         interaction: str,
         camera_range: Dict[str, Any],
-        yaw_step: float = 10.0,
-        pitch_step: float = 7.5,
-        zoom_factor: float = 0.9,
+        yaw_step: float = 22.0,
+        pitch_step: float = 15.0,
+        zoom_factor: float = 0.88,
     ) -> Dict[str, Any]:
+        """
+        Map interaction token to camera delta. Uses unified 3D schema (forward, left, camera_*)
+        and legacy names (move_left, zoom_in). Default steps are large for visible motion.
+        """
         yaw = float(camera_cfg.get("yaw", 0.0))
         pitch = float(camera_cfg.get("pitch", 0.0))
         radius = float(camera_cfg.get("radius", 4.0))
+        sig = interaction.strip().lower()
 
-        if interaction in ["move_left", "rotate_left"]:
+        # Yaw (left/right)
+        if sig in ["move_left", "rotate_left", "left", "camera_l"]:
             yaw -= yaw_step
-        elif interaction in ["move_right", "rotate_right"]:
+        elif sig in ["move_right", "rotate_right", "right", "camera_r"]:
             yaw += yaw_step
-        elif interaction == "move_up":
+        elif sig in ["camera_ul"]:
+            yaw -= yaw_step
             pitch += pitch_step
-        elif interaction == "move_down":
+        elif sig in ["camera_ur"]:
+            yaw += yaw_step
+            pitch += pitch_step
+        elif sig in ["camera_dl"]:
+            yaw -= yaw_step
             pitch -= pitch_step
-        elif interaction == "zoom_in":
+        elif sig in ["camera_dr"]:
+            yaw += yaw_step
+            pitch -= pitch_step
+        # Pitch (up/down)
+        elif sig in ["move_up", "camera_up"]:
+            pitch += pitch_step
+        elif sig in ["move_down", "camera_down"]:
+            pitch -= pitch_step
+        # Radius (forward/backward, zoom)
+        elif sig in ["forward", "zoom_in", "camera_zoom_in"]:
             radius *= zoom_factor
-        elif interaction == "zoom_out":
+        elif sig in ["backward", "zoom_out", "camera_zoom_out"]:
+            radius /= zoom_factor
+        elif sig == "forward_left":
+            yaw -= yaw_step
+            radius *= zoom_factor
+        elif sig == "forward_right":
+            yaw += yaw_step
+            radius *= zoom_factor
+        elif sig == "backward_left":
+            yaw -= yaw_step
+            radius /= zoom_factor
+        elif sig == "backward_right":
+            yaw += yaw_step
             radius /= zoom_factor
 
         camera_cfg["yaw"] = max(camera_range["yaw_min"], min(camera_range["yaw_max"], yaw))
@@ -507,12 +552,12 @@ class VGGTPipeline:
         camera_cfg: Dict[str, Any],
         interaction: str,
         camera_range: Dict[str, Any],
-        yaw_step: float = 10.0,
-        pitch_step: float = 7.5,
-        zoom_factor: float = 0.9,
+        yaw_step: float = 22.0,
+        pitch_step: float = 15.0,
+        zoom_factor: float = 0.88,
     ) -> Dict[str, Any]:
         """
-        Public wrapper for camera update with interaction signals.
+        Public wrapper for camera update with interaction signals (unified schema + legacy names).
         """
         return self._apply_interaction_to_camera(
             camera_cfg=camera_cfg,
@@ -554,14 +599,14 @@ class VGGTPipeline:
             )
 
         if output_path is not None and len(frames) > 0:
-            os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
-            export_to_video([np.array(f) for f in frames], output_path, fps=fps)
+            self._export_video(frames, output_path, fps=fps)
         return frames
 
     def run_two_stage_3dgs_video(
         self,
-        data_path: Union[str, np.ndarray, List[str], List[np.ndarray]],
-        interaction: Optional[List[str]] = None,
+        image_path: Union[str, np.ndarray, List[str], List[np.ndarray]],
+        interactions: Optional[Union[str, List[str]]] = None,
+        frames_per_interaction: int = 10,
         output_dir: str = "./vggt_output",
         point_conf_threshold: float = 0.2,
         resolution: int = 518,
@@ -569,6 +614,8 @@ class VGGTPipeline:
         camera_radius: Optional[float] = None,
         camera_yaw: float = 0.0,
         camera_pitch: float = 0.0,
+        camera_view: Optional[List[float]] = None,
+        camera_trajectory: Any = None,
         image_width: int = 704,
         image_height: int = 480,
         output_name: str = "vggt_3dgs_demo.mp4",
@@ -576,9 +623,9 @@ class VGGTPipeline:
     ) -> str:
         os.makedirs(output_dir, exist_ok=True)
         recon_info = self.reconstruct_ply(
-            input_=data_path,
+            input_=image_path,
             ply_path=output_dir,
-            interaction="point_cloud_generation",
+            interaction=None,
             point_conf_threshold=point_conf_threshold,
             resolution=resolution,
             preprocess_mode=preprocess_mode,
@@ -594,13 +641,26 @@ class VGGTPipeline:
             "pitch": camera_pitch,
         }
 
+        # Apply high-level 5D camera_view if provided.
+        base_camera = self._apply_camera_view_to_camera_cfg(
+            camera_cfg=base_camera,
+            camera_view=camera_view,
+            camera_range=camera_range,
+        )
+
         output_video_path = os.path.join(output_dir, output_name)
-        if interaction and len(interaction) > 0:
+        interaction_sequence = self._normalize_interaction_sequence(interactions)
+        # Each interaction token is repeated frames_per_interaction times (e.g. 10 frames per action).
+        if interaction_sequence and frames_per_interaction > 1:
+            interaction_sequence = [
+                a for a in interaction_sequence for _ in range(frames_per_interaction)
+            ]
+        if interaction_sequence:
             self.render_interaction_video_with_3dgs(
                 ply_path=ply_path,
                 camera_range=camera_range,
                 base_camera_config=base_camera,
-                interaction_sequence=interaction,
+                interaction_sequence=interaction_sequence,
                 image_width=image_width,
                 image_height=image_height,
                 fps=fps,
@@ -620,11 +680,14 @@ class VGGTPipeline:
     def run_stage2_3dgs_video_from_reconstruction(
         self,
         recon_info: Dict[str, Any],
-        interaction: Optional[List[str]] = None,
+        interactions: Optional[Union[str, List[str]]] = None,
+        frames_per_interaction: int = 10,
         output_dir: str = "./vggt_output",
         camera_radius: Optional[float] = None,
         camera_yaw: float = 0.0,
         camera_pitch: float = 0.0,
+        camera_view: Optional[List[float]] = None,
+        camera_trajectory: Any = None,
         image_width: int = 704,
         image_height: int = 480,
         output_name: str = "vggt_3dgs_demo.mp4",
@@ -645,13 +708,20 @@ class VGGTPipeline:
             "pitch": camera_pitch,
         }
 
+        base_camera = self._apply_camera_view_to_camera_cfg(
+            camera_cfg=base_camera,
+            camera_view=camera_view,
+            camera_range=camera_range,
+        )
+
         output_video_path = os.path.join(output_dir, output_name)
-        if interaction and len(interaction) > 0:
+        interaction_sequence = self._normalize_interaction_sequence(interactions)
+        if interaction_sequence:
             self.render_interaction_video_with_3dgs(
                 ply_path=ply_path,
                 camera_range=camera_range,
                 base_camera_config=base_camera,
-                interaction_sequence=interaction,
+                interaction_sequence=interaction_sequence,
                 image_width=image_width,
                 image_height=image_height,
                 fps=fps,
@@ -670,7 +740,7 @@ class VGGTPipeline:
 
     def run_two_stage_3dgs_stream_cli(
         self,
-        data_path: Union[str, np.ndarray, List[str], List[np.ndarray]],
+        image_path: Union[str, np.ndarray, List[str], List[np.ndarray]],
         output_dir: str = "./vggt_stream_output",
         point_conf_threshold: float = 0.2,
         resolution: int = 518,
@@ -682,23 +752,21 @@ class VGGTPipeline:
     ) -> str:
         os.makedirs(output_dir, exist_ok=True)
         recon_info = self.reconstruct_ply(
-            input_=data_path,
+            input_=image_path,
             ply_path=output_dir,
-            interaction="point_cloud_generation",
+            interaction=None,
             point_conf_threshold=point_conf_threshold,
             resolution=resolution,
             preprocess_mode=preprocess_mode,
         )
 
+        # Unified 3D schema (same as operator); legacy names still supported in _apply_interaction_to_camera
         available_interactions = [
-            "move_left",
-            "move_right",
-            "move_up",
-            "move_down",
-            "zoom_in",
-            "zoom_out",
-            "rotate_left",
-            "rotate_right",
+            "forward", "backward", "left", "right",
+            "forward_left", "forward_right", "backward_left", "backward_right",
+            "camera_up", "camera_down", "camera_l", "camera_r",
+            "camera_ul", "camera_ur", "camera_dl", "camera_dr",
+            "camera_zoom_in", "camera_zoom_out",
         ]
 
         ply_path = recon_info["ply_path"]
@@ -754,14 +822,14 @@ class VGGTPipeline:
                 continue
 
             for sig in current_signal:
-                for _ in range(frame_units * 6):
+                for _ in range(frame_units):
                     camera_cfg = self._apply_interaction_to_camera(
                         camera_cfg,
                         sig,
                         camera_range,
-                        yaw_step=2.0,
-                        pitch_step=1.5,
-                        zoom_factor=0.98,
+                        yaw_step=22.0,
+                        pitch_step=15.0,
+                        zoom_factor=0.88,
                     )
                     frame = self.render_with_3dgs(
                         ply_path=ply_path,
@@ -776,23 +844,57 @@ class VGGTPipeline:
             turn_idx += 1
 
         output_video_path = os.path.join(output_dir, output_name)
-        export_to_video(all_frames, output_video_path, fps=fps)
+        self._export_video(all_frames, output_video_path, fps=fps)
         print(f"Total frames generated: {len(all_frames)}")
         print(f"Stream video saved to: {output_video_path}")
         return output_video_path
     
+    def stream(
+        self,
+        image_path: Optional[Union[str, List[str]]] = None,
+        images: Any = None,
+        interactions: Optional[List[str]] = None,
+        task_type: Optional[str] = None,
+        **kwargs
+    ):
+        """
+        Stream interface. Input: image_path or images; interactions (for fallback process).
+        task_type: \"vggt_two_stage_3dgs_stream_cli\" -> output_video_path; else yield image tensors.
+        """
+        data = images if images is not None else image_path
+        if data is None:
+            raise ValueError("Provide image_path or images.")
+        if task_type == "vggt_two_stage_3dgs_stream_cli":
+            return self.run_two_stage_3dgs_stream_cli(image_path=data, **kwargs)
+
+        result = self.process(input_=data, interaction=interactions, **kwargs)
+        for img in result.images:
+            yield torch.from_numpy(np.array(img))
+    
     def __call__(
         self,
-        input_: Union[str, np.ndarray, List[str], List[np.ndarray]],
-        interaction: Optional[Union[str, Dict[str, Any]]] = None,
+        image_path: Optional[Union[str, List[str]]] = None,
+        images: Any = None,
+        interactions: Optional[List[str]] = None,
+        camera_view: Optional[List[float]] = None,
+        task_type: Optional[str] = None,
         **kwargs
-    ) -> VGGTResult:
-        """Main call interface for the pipeline."""
-        return self.process(
-            input_=input_,
-            interaction=interaction,
-            **kwargs
-        )
+    ) -> Union[VGGTResult, str]:
+        """
+        Main call interface. Input: image_path or images; interactions; camera_view (5D, for two-stage).
+        task_type: None | \"vggt_base\" -> VGGTResult; \"vggt_two_stage_3dgs\" -> output_video_path (str).
+        """
+        data = images if images is not None else image_path
+        if data is None:
+            raise ValueError("Provide image_path or images.")
+        if task_type == "vggt_two_stage_3dgs":
+            return self.run_two_stage_3dgs_video(
+                image_path=data,
+                interactions=interactions,
+                camera_view=camera_view,
+                **kwargs,
+            )
+        return self.process(input_=data, interaction=interactions, **kwargs)
 
 
 __all__ = ["VGGTPipeline", "VGGTResult"]
