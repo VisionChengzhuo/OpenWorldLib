@@ -4,13 +4,13 @@ sys.path.append("..")
 from openworldlib.pipelines.vggt.pipeline_vggt import VGGTPipeline
 
 
-DATA_PATH = "../data/test_case1/ref_image.png"
+DATA_PATH = "../data/test_case/test_image_seq_case1"
 MODEL_PATH = "facebook/VGGT-1B"
 OUTPUT_DIR = "./vggt_output"
 
 # Interactions follow unified 3D schema, e.g.:
 # ["forward", "left", "camera_zoom_in"]
-INTERACTIONS = ["left", "camera_zoom_in"]
+INTERACTIONS = ["camera_zoom_in","left"]
 
 # camera_view: [dx, dy, dz, theta_x, theta_z]
 CAMERA_VIEW = None
