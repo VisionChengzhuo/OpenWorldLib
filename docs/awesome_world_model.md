@@ -64,7 +64,10 @@
 <details>
 <summary><strong>7. Positional Paper</strong></summary>
 
+- **A Path Towards Autonomous Machine Intelligence** · [[Paper]](https://openreview.net/pdf?id=BZ5a1r-kVsf)
+- **Critiques of World Models** · [[Paper]](http://arxiv.org/abs/2507.05169)
 - **Positional Encoding Field** · [[Paper]](https://arxiv.org/pdf/2510.20385) [[Code]](https://github.com/MTLab/PE-Field)
+- **Visual Generation Unlocks Human-Like Reasoning through Multimodal World Models** · [[Paper]](https://arxiv.org/abs/2601.19834) [[Code]](https://github.com/thuml/reasoning-visual-world)
 - **Research on World Models Is Not Injecting World Knowledge into Specific Tasks** · [[Paper]](https://arxiv.org/pdf/2602.01630) [[Code]](#)
 </details>
 
