@@ -58,6 +58,7 @@
 - **Awesome-World-Models** · [[Paper]](#) [[Code]](https://github.com/knightnemo/Awesome-World-Models)
 - **Awesome-From-Video-Generation-to-World-Model** · [[Paper]](https://arxiv.org/pdf/2511.08585) [[Code]](https://github.com/ziqihuangg/Awesome-From-Video-Generation-to-World-Model)
 - **Awesome-Video-World-Models-with-AR-Diffusion** · [[Paper]](#) [[Code]](https://github.com/gracezhao1997/Awesome-Video-World-Models-with-AR-Diffusion)
+- **Unified Operator on Interactive World Model** · [[Paper]](#) [[Code]](https://github.com/Rising0321/WMFactory)
 - **Awesome-VLA-for-AD** · [[Paper]]() [[Code]](https://github.com/worldbench/awesome-vla-for-ad)
 </details>
 
