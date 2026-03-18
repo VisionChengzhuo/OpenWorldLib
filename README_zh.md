@@ -6,7 +6,7 @@
 ---
 
 <a href="https://github.com/OpenDCAI/OpenWorldLib"><img alt="Build" src="https://img.shields.io/github/stars/OpenDCAI/OpenWorldLib"></a> <!-- License --> <a href="https://github.com/OpenDCAI/OpenWorldLib/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/OpenDCAI/OpenWorldLib"></a> <!-- GitHub Issues --> <a href="https://github.com/OpenDCAI/OpenWorldLib/issues"><img alt="Issues" src="https://img.shields.io/github/issues/OpenDCAI/OpenWorldLib"></a>
-<img alt="Report" src="https://img.shields.io/badge/📄 Technical Report-Coming Soon-lightgrey">
+<a href="https://github.com/user-attachments/assets/35d48c4f-adb3-4f10-b30f-e7f4a245ab48"><img alt="Add me on WeChat" src="https://img.shields.io/badge/Connect_on-WeChat-07C160?style=flat-square&logo=wechat&logoColor=white"></a> <img alt="Report" src="https://img.shields.io/badge/📄 Technical Report-Coming Soon-lightgrey">
 <!-- <a href="https://arxiv.org/abs/xxxx.xxxxx"><img alt="Paper" src="https://img.shields.io/badge/arXiv-xxxx.xxxxx-b31b1b?logo=arxiv&logoColor=white"></a> -->
 
 [English](README.md) | [中文](README_zh.md)
@@ -217,7 +217,7 @@ OpenWorldLib
 ### 开发者指南
 我们欢迎各位开发者共同参与，帮助完善 **OpenWorldLib** 这一统一世界模型仓库。推荐采用 **Vibe Coding** 方式进行快捷的代码提交，相关提示词可参考 `tools/vibe_code/prompts` 目录下的内容。同时也可以向 [docs/planning.md](docs/planning.md) 以及 [docs/awesome_world_models.md](docs/awesome_world_model.md) 补充高质量的world model相关工作。期待你的贡献！
 
-相关文档可以查看：[[工程整体目标]](https://wcny4qa9krto.feishu.cn/wiki/NAy4wGbGrilzZ6kVInKcqkB9nUe)；[[开发流程指南]](https://wcny4qa9krto.feishu.cn/wiki/XF2Ew583ziTT8LkNiAQcyZtTn2N)；[[开发分工细节]](https://wcny4qa9krto.feishu.cn/wiki/NLFdw1NpBickgCkb2WQcGJrInUe)；[[代码提交规范]](https://wcny4qa9krto.feishu.cn/wiki/Zs8cwPWqMi45FSknzLPc1WlhnAg)
+相关文档可以查看：[[开发流程指南]](https://wcny4qa9krto.feishu.cn/wiki/XtPJwf5XQipP7RkeVv0ckyWlnNd?from=from_copylink)
 
 
 ### 致谢

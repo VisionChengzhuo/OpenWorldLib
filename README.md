@@ -6,7 +6,7 @@
 ---
 
 <a href="https://github.com/OpenDCAI/OpenWorldLib"><img alt="Build" src="https://img.shields.io/github/stars/OpenDCAI/OpenWorldLib"></a> <!-- License --> <a href="https://github.com/OpenDCAI/OpenWorldLib/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/OpenDCAI/OpenWorldLib"></a> <!-- GitHub Issues --> <a href="https://github.com/OpenDCAI/OpenWorldLib/issues"><img alt="Issues" src="https://img.shields.io/github/issues/OpenDCAI/OpenWorldLib"></a>
-<img alt="Report" src="https://img.shields.io/badge/📄 Technical Report-Coming Soon-lightgrey">
+<a href="https://github.com/user-attachments/assets/35d48c4f-adb3-4f10-b30f-e7f4a245ab48"><img alt="Add me on WeChat" src="https://img.shields.io/badge/Connect_on-WeChat-07C160?style=flat-square&logo=wechat&logoColor=white"></a> <img alt="Report" src="https://img.shields.io/badge/📄 Technical Report-Coming Soon-lightgrey">
 <!-- <a href="https://arxiv.org/abs/xxxx.xxxxx"><img alt="Paper" src="https://img.shields.io/badge/arXiv-xxxx.xxxxx-b31b1b?logo=arxiv&logoColor=white"></a> -->
 
 [English](README.md) | [中文](README_zh.md)
@@ -213,7 +213,7 @@ When using OpenWorldLib, users typically call the **pipeline** class directly, w
 ### For Developers
 We welcome all developers to contribute and help improve **OpenWorldLib** as a unified world model repository. We recommend using **Vibe Coding** for quick code contributions — related prompts can be found under `tools/vibe_code/prompts`. You are also encouraged to add high-quality world model works to [docs/planning.md](docs/planning.md) and [docs/awesome_world_models.md](docs/awesome_world_model.md). We look forward to your contributions!
 
-Related documents: [[Project Overview]](https://wcny4qa9krto.feishu.cn/wiki/NAy4wGbGrilzZ6kVInKcqkB9nUe) | [[Development Guide]](https://wcny4qa9krto.feishu.cn/wiki/XF2Ew583ziTT8LkNiAQcyZtTn2N) | [[Task Assignment Details]](https://wcny4qa9krto.feishu.cn/wiki/NLFdw1NpBickgCkb2WQcGJrInUe) | [[Code Submission Guidelines]](https://wcny4qa9krto.feishu.cn/wiki/Zs8cwPWqMi45FSknzLPc1WlhnAg)
+Related documents: [[Development Guide]](https://wcny4qa9krto.feishu.cn/wiki/XtPJwf5XQipP7RkeVv0ckyWlnNd?from=from_copylink)
 
 
 ### Acknowledgment
