@@ -84,11 +84,12 @@ We warmly welcome researchers to share their views on this framework or thoughts
 
 
 ### Important Docs <!-- omit in toc -->
-The following three documents are essential to this project (click to navigate):
+The following four documents are essential to this project (click to navigate):
 
 - [docs/planning.md](docs/planning.md): This document tracks the short-term optimization goals and future development plans for OpenWorldLib.
 - [docs/awesome_world_models.md](docs/awesome_world_model.md): This document records cutting-edge research, related surveys, and open-source projects on world models.
 - [docs/installation.md](docs/installation.md): This document provides installation instructions for different methods in OpenWorldLib.
+- [Development Guide](https://wcny4qa9krto.feishu.cn/wiki/XtPJwf5XQipP7RkeVv0ckyWlnNd?from=from_copylink): This document provides a framework template for OpenWorldLib, intended to serve as a reference for code integration for developers in the world model community.
 
 
 ### Table of Contents <!-- omit in toc -->

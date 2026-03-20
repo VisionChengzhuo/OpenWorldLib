@@ -86,11 +86,12 @@
 
 
 ### 重要文档 <!-- omit in toc -->
-以下三份文档对本项目至关重要（点击可跳转）：
+以下四份文档对本项目至关重要（点击可跳转）：
 
 - [docs/planning.md](docs/planning.md)：该文档跟踪 OpenWorldLib 的短期优化目标和未来发展计划。
 - [docs/awesome_world_models.md](docs/awesome_world_model.md)：该文档记录了世界模型相关的前沿研究、综述论文和开源项目。
 - [docs/installation.md](docs/installation.md)：该文档提供了 OpenWorldLib 中不同方法的安装说明。
+- [开发流程指南](https://wcny4qa9krto.feishu.cn/wiki/XtPJwf5XQipP7RkeVv0ckyWlnNd?from=from_copylink): 该文档提供了 OpenWorldLib 的框架模板，旨在为世界模型社区的开发者提供代码合并的参考。
 
 
 ### 目录 <!-- omit in toc -->
