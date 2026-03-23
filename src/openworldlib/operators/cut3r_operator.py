@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from typing import List, Optional, Union, Dict, Any
 from pathlib import Path
+from PIL import Image
 
 from .base_operator import BaseOperator
 
@@ -15,19 +16,12 @@ class CUT3ROperator(BaseOperator):
         self,
         operation_types=["visual_instruction"],
         interaction_template=[
-            "image_3d", 
-            "video_3d", 
-            "point_cloud", 
-            "depth_map", 
-            "camera_pose",
-            "move_left",
-            "move_right",
-            "move_up",
-            "move_down",
-            "zoom_in",
-            "zoom_out",
-            "rotate_left",
-            "rotate_right"
+            "forward", "backward", "left", "right",
+            "forward_left", "forward_right", "backward_left", "backward_right",
+            "camera_up", "camera_down",
+            "camera_l", "camera_r",
+            "camera_ul", "camera_ur", "camera_dl", "camera_dr",
+            "camera_zoom_in", "camera_zoom_out",
         ]
     ):
         """
@@ -36,14 +30,12 @@ class CUT3ROperator(BaseOperator):
         Args:
             operation_types: List of operation types
             interaction_template: List of valid interaction types
-                - "image_3d": Process single image for 3D reconstruction
-                - "video_3d": Process video for 3D reconstruction
-                - "point_cloud": Generate point cloud output
-                - "depth_map": Generate depth map output
-                - "camera_pose": Estimate camera poses
-                - "move_left/right/up/down": Camera movement controls
-                - "zoom_in/out": Camera zoom controls
-                - "rotate_left/right": Camera rotation controls
+                - Unified 3D camera controls:
+                  forward/backward/left/right, forward_left/forward_right,
+                  backward_left/backward_right,
+                  camera_up/camera_down, camera_l/camera_r,
+                  camera_ul/camera_ur/camera_dl/camera_dr,
+                  camera_zoom_in/camera_zoom_out
         """
         super(CUT3ROperator, self).__init__(operation_types=operation_types)
         self.interaction_template = interaction_template
@@ -77,7 +69,7 @@ class CUT3ROperator(BaseOperator):
     
     def process_perception(
         self,
-        input_signal: Union[str, np.ndarray, torch.Tensor, List[str], List[np.ndarray]]
+        input_signal: Union[str, np.ndarray, torch.Tensor, Image.Image, List[str], List[np.ndarray], List[Image.Image]]
     ) -> Union[np.ndarray, List[np.ndarray]]:
         """
         Process visual signal (image/video) for real-time interactive updates.
@@ -98,12 +90,18 @@ class CUT3ROperator(BaseOperator):
         Raises:
             ValueError: If image cannot be loaded or processed
         """
-        # Handle list inputs
+        # Handle list inputs (paths, numpy arrays, tensors, PIL Images)
         if isinstance(input_signal, list):
             return [self.process_perception(item) for item in input_signal]
         
         # Handle single input
-        if isinstance(input_signal, torch.Tensor):
+        if isinstance(input_signal, Image.Image):
+            image_rgb = np.array(input_signal)
+            if image_rgb.dtype != np.float32:
+                image_rgb = image_rgb.astype(np.float32)
+            if image_rgb.max() > 1.0:
+                image_rgb = image_rgb / 255.0
+        elif isinstance(input_signal, torch.Tensor):
             # Assume tensor is in CHW format, convert to numpy
             if input_signal.dim() == 3:
                 image_rgb = input_signal.permute(1, 2, 0).cpu().numpy()
@@ -191,44 +189,16 @@ class CUT3ROperator(BaseOperator):
             "camera_control": None
         }
         
-        # Data type interactions
-        if latest_interaction == "image_3d":
-            result["data_type"] = "image"
-            result["output_type"] = "all"
-        elif latest_interaction == "video_3d":
-            result["data_type"] = "video"
-            result["output_type"] = "all"
-        elif latest_interaction == "point_cloud":
-            result["data_type"] = "image"
-            result["output_type"] = "point_cloud"
-        elif latest_interaction == "depth_map":
-            result["data_type"] = "image"
-            result["output_type"] = "depth_map"
-        elif latest_interaction == "camera_pose":
-            result["data_type"] = "image"
-            result["output_type"] = "camera_pose"
-        
-        # Camera control interactions
-        elif latest_interaction in ["move_left", "move_right", "move_up", "move_down"]:
-            direction_map = {
-                "move_left": {"x": -0.1, "y": 0, "z": 0},
-                "move_right": {"x": 0.1, "y": 0, "z": 0},
-                "move_up": {"x": 0, "y": 0.1, "z": 0},
-                "move_down": {"x": 0, "y": -0.1, "z": 0},
-            }
-            result["camera_control"] = direction_map[latest_interaction]
-        elif latest_interaction in ["zoom_in", "zoom_out"]:
-            zoom_map = {
-                "zoom_in": {"scale": 1.1},
-                "zoom_out": {"scale": 0.9},
-            }
-            result["camera_control"] = zoom_map[latest_interaction]
-        elif latest_interaction in ["rotate_left", "rotate_right"]:
-            rotation_map = {
-                "rotate_left": {"angle": -10},
-                "rotate_right": {"angle": 10},
-            }
-            result["camera_control"] = rotation_map[latest_interaction]
+        # Camera control interactions (unified 3D schema)
+        if latest_interaction in [
+            "forward", "backward", "left", "right",
+            "forward_left", "forward_right", "backward_left", "backward_right",
+            "camera_up", "camera_down",
+            "camera_l", "camera_r",
+            "camera_ul", "camera_ur", "camera_dl", "camera_dr",
+            "camera_zoom_in", "camera_zoom_out",
+        ]:
+            result["camera_control"] = {"interaction": latest_interaction}
         
         # Add num_frames if provided (for video processing)
         if num_frames is not None:
@@ -242,5 +212,89 @@ class CUT3ROperator(BaseOperator):
             self.current_interaction = self.current_interaction[:-1]
         else:
             raise ValueError("No interaction to delete.")
+
+    @staticmethod
+    def normalize_interaction_sequence(
+        interaction: Optional[Union[str, List[str]]]
+    ) -> List[str]:
+        """
+        Normalize interaction input to a flat list of strings.
+        Supports None, single string, or list of strings.
+        """
+        if interaction is None:
+            return []
+        if isinstance(interaction, str):
+            return [interaction]
+        return [str(sig) for sig in interaction if str(sig).strip()]
+
+    @staticmethod
+    def apply_interaction_to_camera(
+        camera_cfg: Dict[str, Any],
+        interaction: str,
+        camera_range: Dict[str, Any],
+        yaw_step: float = 30.0,
+        pitch_step: float = 20.0,
+        zoom_factor: float = 0.6,
+    ) -> Dict[str, Any]:
+        """
+        Update a simple (radius, yaw, pitch) camera configuration according to a
+        high-level interaction signal, clamped by camera_range.
+        Only supports the unified 3D interaction schema
+        (forward/backward/left/right, forward_left, camera_l, camera_zoom_in, ...).
+        """
+        yaw = float(camera_cfg.get("yaw", 0.0))
+        pitch = float(camera_cfg.get("pitch", 0.0))
+        radius = float(camera_cfg.get("radius", 4.0))
+        sig = interaction.strip().lower()
+
+        # Yaw (left/right)
+        if sig in ["left", "camera_l"]:
+            yaw -= yaw_step
+        elif sig in ["right", "camera_r"]:
+            yaw += yaw_step
+        elif sig == "camera_ul":
+            yaw -= yaw_step
+            pitch += pitch_step
+        elif sig == "camera_ur":
+            yaw += yaw_step
+            pitch += pitch_step
+        elif sig == "camera_dl":
+            yaw -= yaw_step
+            pitch -= pitch_step
+        elif sig == "camera_dr":
+            yaw += yaw_step
+            pitch -= pitch_step
+        # Pitch (up/down)
+        elif sig == "camera_up":
+            pitch += pitch_step
+        elif sig == "camera_down":
+            pitch -= pitch_step
+        # Radius (forward/backward, zoom)
+        elif sig in ["forward", "camera_zoom_in"]:
+            radius *= zoom_factor
+        elif sig in ["backward", "camera_zoom_out"]:
+            radius /= zoom_factor
+        elif sig == "forward_left":
+            yaw -= yaw_step
+            radius *= zoom_factor
+        elif sig == "forward_right":
+            yaw += yaw_step
+            radius *= zoom_factor
+        elif sig == "backward_left":
+            yaw -= yaw_step
+            radius /= zoom_factor
+        elif sig == "backward_right":
+            yaw += yaw_step
+            radius /= zoom_factor
+
+        yaw = max(camera_range["yaw_min"], min(camera_range["yaw_max"], yaw))
+        pitch = max(camera_range["pitch_min"], min(camera_range["pitch_max"], pitch))
+        radius = max(camera_range["radius_min"], min(camera_range["radius_max"], radius))
+
+        camera_cfg["yaw"] = yaw
+        camera_cfg["pitch"] = pitch
+        camera_cfg["radius"] = radius
+
+        return camera_cfg
 
 
