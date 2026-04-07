@@ -11,7 +11,6 @@ from ...representations.point_clouds_generation.pi3.loger_representation import 
 
 
 def _apply_camera_delta(c2w: np.ndarray, delta: List[float]) -> np.ndarray:
-    """Apply a [dx,dy,dz,theta_x,theta_z] delta to a 4x4 camera-to-world matrix."""
     dx, dy, dz, theta_x, theta_z = delta
     result = c2w.copy()
 
@@ -41,7 +40,6 @@ def render_point_cloud(
     focal_scale: float = 1.0,
     splat_radius: int = 3,
 ) -> Image.Image:
-    """Render a point cloud with strict z-buffer and front-to-back splatting."""
     c2w = camera_to_world.astype(np.float64)
     w2c = np.linalg.inv(c2w)
     R, t = w2c[:3, :3], w2c[:3, 3]
@@ -51,10 +49,8 @@ def render_point_cloud(
     pts_cam = pts_cam[valid]
     cols = colors[valid]
     if cols.dtype in (np.float64, np.float32):
-        if cols.max() <= 1.0:
-            cols = (cols * 255).clip(0, 255).astype(np.uint8)
-        else:
-            cols = cols.clip(0, 255).astype(np.uint8)
+        cols = (cols * 255).clip(0, 255).astype(np.uint8) if cols.max() <= 1.0 \
+               else cols.clip(0, 255).astype(np.uint8)
 
     fx = fy = focal_scale * max(height, width)
     cx_img, cy_img = width / 2.0, height / 2.0
@@ -74,8 +70,7 @@ def render_point_cloud(
         for dx in range(-r, r + 1):
             if dx * dx + dy * dy > r * r:
                 continue
-            py = v + dy
-            px = u + dx
+            py, px = v + dy, u + dx
             mask = (px >= 0) & (px < width) & (py >= 0) & (py < height)
             px_m, py_m, z_m, cols_m = px[mask], py[mask], z[mask], cols[mask]
             closer = z_m < z_buf[py_m, px_m]
@@ -124,19 +119,14 @@ class LoGeRResult:
         if "points" in self.numpy_data and "masks" in self.numpy_data and self.input_images is not None:
             try:
                 from plyfile import PlyData, PlyElement
-                points_b0 = self.numpy_data["points"][0]
-                masks_b0 = self.numpy_data["masks"][0].astype(bool)
-                colors = np.stack(self.input_images, axis=0)
-                pts = points_b0[masks_b0].astype(np.float32)
-                col = (colors[masks_b0] * 255).clip(0, 255).astype(np.uint8)
-                vertices = np.zeros(
-                    pts.shape[0],
-                    dtype=[
-                        ("x", "f4"), ("y", "f4"), ("z", "f4"),
-                        ("nx", "f4"), ("ny", "f4"), ("nz", "f4"),
-                        ("red", "u1"), ("green", "u1"), ("blue", "u1"),
-                    ],
-                )
+                pts = self.numpy_data["points"][0][self.numpy_data["masks"][0].astype(bool)].astype(np.float32)
+                colors_all = np.stack(self.input_images, axis=0)
+                col = (colors_all[self.numpy_data["masks"][0].astype(bool)] * 255).clip(0, 255).astype(np.uint8)
+                vertices = np.zeros(pts.shape[0], dtype=[
+                    ("x", "f4"), ("y", "f4"), ("z", "f4"),
+                    ("nx", "f4"), ("ny", "f4"), ("nz", "f4"),
+                    ("red", "u1"), ("green", "u1"), ("blue", "u1"),
+                ])
                 vertices["x"], vertices["y"], vertices["z"] = pts[:, 0], pts[:, 1], pts[:, 2]
                 vertices["nx"], vertices["ny"], vertices["nz"] = 0.0, 0.0, 0.0
                 vertices["red"], vertices["green"], vertices["blue"] = col[:, 0], col[:, 1], col[:, 2]
@@ -157,26 +147,25 @@ class LoGeRResult:
         depth_dir = os.path.join(output_dir, "depth")
         os.makedirs(depth_dir, exist_ok=True)
         for i, img in enumerate(self.depth_images):
-            depth_path = os.path.join(depth_dir, f"depth_{i:04d}.png")
-            img.save(depth_path)
-            saved_files.append(depth_path)
+            path = os.path.join(depth_dir, f"depth_{i:04d}.png")
+            img.save(path)
+            saved_files.append(path)
 
-        if self.input_images is not None and len(self.input_images) > 0:
+        if self.input_images:
             rgb_dir = os.path.join(output_dir, "rgb")
             os.makedirs(rgb_dir, exist_ok=True)
-            for i, img_arr in enumerate(self.input_images):
-                img_uint8 = (img_arr * 255).clip(0, 255).astype(np.uint8)
-                rgb_path = os.path.join(rgb_dir, f"frame_{i:04d}.png")
-                Image.fromarray(img_uint8).save(rgb_path)
-                saved_files.append(rgb_path)
+            for i, arr in enumerate(self.input_images):
+                path = os.path.join(rgb_dir, f"frame_{i:04d}.png")
+                Image.fromarray((arr * 255).clip(0, 255).astype(np.uint8)).save(path)
+                saved_files.append(path)
 
         poses_dir = os.path.join(output_dir, "camera_poses")
         os.makedirs(poses_dir, exist_ok=True)
         for i, cam in enumerate(self.camera_params):
-            pose_path = os.path.join(poses_dir, f"pose_{i:04d}.json")
-            with open(pose_path, "w") as f:
+            path = os.path.join(poses_dir, f"pose_{i:04d}.json")
+            with open(path, "w") as f:
                 json.dump(cam, f, indent=2)
-            saved_files.append(pose_path)
+            saved_files.append(path)
 
         meta_path = os.path.join(output_dir, "meta.json")
         with open(meta_path, "w") as f:
@@ -241,27 +230,72 @@ class LoGeRPipeline:
             raise ValueError(f"Unknown mode: {m}. Choose 'loger' or 'loger_star'.")
         return cls(representation_model=representation_model)
 
+    def process(
+        self,
+        images: Union[str, np.ndarray, List[str], List[np.ndarray], None] = None,
+        interactions: Optional[List[str]] = None,
+        interval: int = -1,
+    ) -> Dict[str, Any]:
+        """Operator-level processing: perception preprocessing + interaction delta.
+
+        Args:
+            images:       Raw image input passed to operator.process_perception().
+                          Pass None to skip perception (e.g. render-only turns).
+            interactions: Navigation signal list, e.g. ["forward", "camera_r"].
+                          Pass None to skip interaction processing.
+            interval:     Frame-sampling interval forwarded to process_perception().
+
+        Returns:
+            Dict with keys:
+                "images_data"  – preprocessed image list from operator (or None)
+                "imgs_tensor"  – batched tensor ready for representation_model (or None)
+                "resized_images" – list of HWC float32 arrays (or None)
+                "delta"        – [dx,dy,dz,theta_x,theta_z] from process_interaction()
+                                  (or None when no interactions given)
+        """
+        result: Dict[str, Any] = {
+            "images_data": None,
+            "imgs_tensor": None,
+            "resized_images": None,
+            "delta": None,
+        }
+
+        # ── 1. Perception preprocessing (operator) ──
+        if images is not None:
+            images_data = self.operator.process_perception(images, interval=interval)
+            if not isinstance(images_data, list):
+                images_data = [images_data]
+
+            device = self.representation_model.device
+            imgs_tensor = self.operator.images_to_tensor(images_data, device=device)
+            resized_images = [
+                imgs_tensor[0, i].permute(1, 2, 0).cpu().numpy()
+                for i in range(imgs_tensor.shape[1])
+            ]
+
+            result["images_data"] = images_data
+            result["imgs_tensor"] = imgs_tensor
+            result["resized_images"] = resized_images
+
+        # ── 2. Interaction → delta (operator) ──
+        if interactions is not None:
+            self.operator.get_interaction(interactions)
+            delta = self.operator.process_interaction()
+            result["delta"] = delta
+
+        return result
+
     def _run_inference(
         self,
-        images: Union[str, np.ndarray, List[str], List[np.ndarray]],
+        processed: Dict[str, Any],
         **kwargs,
     ) -> LoGeRResult:
-        """Run LoGeR model inference (single-shot, produces all outputs)."""
+        """Run representation model with already-processed operator outputs."""
         if self.representation_model is None:
             raise RuntimeError("Representation model not loaded. Use from_pretrained() first.")
 
-        interval = kwargs.get("interval", -1)
-        images_data = self.operator.process_perception(images, interval=interval)
-        if not isinstance(images_data, list):
-            images_data = [images_data]
-
-        device = self.representation_model.device
-        imgs_tensor = self.operator.images_to_tensor(images_data, device=device)
-
-        resized_images = [
-            imgs_tensor[0, i].permute(1, 2, 0).cpu().numpy()
-            for i in range(imgs_tensor.shape[1])
-        ]
+        imgs_tensor = processed["imgs_tensor"]
+        resized_images = processed["resized_images"]
 
         data = {
             "images": imgs_tensor,
@@ -291,6 +325,7 @@ class LoGeRPipeline:
 
         results = self.representation_model.get_representation(data)
 
+        # ── Build depth images ──
         depth_images = []
         depth_maps = results.get("depth_map")
         if depth_maps is not None:
@@ -299,22 +334,19 @@ class LoGeRPipeline:
                 depth_b0 = depth_b0[np.newaxis, ...]
             for i in range(depth_b0.shape[0]):
                 d = depth_b0[i].astype(np.float64)
-                d_min, d_max = d.min(), d.max()
-                d_norm = (d - d_min) / (d_max - d_min + 1e-8)
-                d_uint8 = (d_norm * 255).astype(np.uint8)
-                depth_images.append(Image.fromarray(d_uint8, mode="L"))
+                d_norm = (d - d.min()) / (d.max() - d.min() + 1e-8)
+                depth_images.append(Image.fromarray((d_norm * 255).astype(np.uint8), mode="L"))
 
+        # ── Build camera params ──
         camera_params = []
         cam_poses = results.get("camera_poses")
         if cam_poses is not None:
             for i in range(cam_poses[0].shape[0]):
-                camera_params.append({
-                    "camera_to_world": cam_poses[0][i].tolist(),
-                })
+                camera_params.append({"camera_to_world": cam_poses[0][i].tolist()})
 
         camera_range = _build_camera_range(camera_params)
 
-        result = LoGeRResult(
+        return LoGeRResult(
             depth_images=depth_images,
             numpy_data=results,
             camera_params=camera_params,
@@ -322,23 +354,15 @@ class LoGeRPipeline:
             input_images=resized_images,
             data_type="image",
         )
-        self._cached_result = result
-        if camera_params:
-            self._current_camera = np.array(camera_params[0]["camera_to_world"])
-        return result
+    
 
     def render_view(
         self,
-        result: Optional["LoGeRResult"] = None,
+        result: Optional[LoGeRResult] = None,
         camera_view=None,
         camera_to_world: Optional[np.ndarray] = None,
     ) -> Image.Image:
-        """Render a view from cached point cloud (no model inference).
-
-        Args:
-            camera_view: int (view index), list [dx,dy,dz,theta_x,theta_z], or None (default).
-            camera_to_world: explicit 4x4 matrix (overrides camera_view if provided).
-        """
+        
         res = result or self._cached_result
         if res is None:
             raise RuntimeError("No result available. Run inference first via __call__().")
@@ -372,7 +396,7 @@ class LoGeRPipeline:
         return render_point_cloud(pts, cols, c2w, h, w)
 
     def _render_trajectory(self, n_interp: int = 15, **kwargs) -> List[Image.Image]:
-        """Render by interpolating between original camera poses."""
+
         res = self._cached_result
         if res is None:
             raise RuntimeError("No result available. Run reconstruction first.")
@@ -385,6 +409,7 @@ class LoGeRPipeline:
         h, w = pts_all.shape[1], pts_all.shape[2]
 
         c2ws = [np.array(c["camera_to_world"], dtype=np.float64) for c in res.camera_params]
+
         frames = []
         for vi in range(len(c2ws) - 1):
             for j in range(n_interp):
@@ -392,6 +417,7 @@ class LoGeRPipeline:
                 c2w = c2ws[vi] * (1 - t) + c2ws[vi + 1] * t
                 frames.append(render_point_cloud(pts, cols, c2w, h, w))
         frames.append(render_point_cloud(pts, cols, c2ws[-1], h, w))
+
         return frames
 
     def __call__(
@@ -406,61 +432,56 @@ class LoGeRPipeline:
         visualize_ops: bool = True,
         **kwargs,
     ):
-        """Unified call interface. Behavior is determined by task_type.
-
-        Args:
-            images: Image input path/list/tensor/array.
-            videos: Video input path/list. Takes precedence over images.
-            image_path: Alias for a single image path.
-            video_path: Alias for a single video path.
-            task_type: One of "reconstruction", "render_view", "render_trajectory".
-            interactions: Navigation signals e.g. ["forward", "left", "camera_r"].
-                When provided with task_type="render_view", generates a smooth
-                transition video across each interaction.
-            camera_view: int (view index) or list [dx,dy,dz,theta_x,theta_z].
-            visualize_ops: Whether to generate visualizations.
-
-        Returns:
-            - "reconstruction"    → LoGeRResult
-            - "render_view"       → PIL.Image, or List[PIL.Image] when interactions given
-            - "render_trajectory" → List[PIL.Image]
-        """
+        
         visual_input = videos or video_path or images or image_path
 
+        # Unified pre-step: if new visual input is provided, reconstruct and cache scene first.
+        if visual_input is not None:
+            processed = self.process(images=visual_input, interval=kwargs.get("interval", -1))
+            result = self._run_inference(processed, **kwargs)
+            self._cached_result = result
+            if result.camera_params:
+                self._current_camera = np.array(result.camera_params[0]["camera_to_world"])
+
         if task_type == "reconstruction":
-            if visual_input is None:
+            if self._cached_result is None:
                 raise ValueError("images is required for task_type='reconstruction'.")
-            return self._run_inference(visual_input, **kwargs)
+            return self._cached_result
 
         elif task_type == "render_view":
+            if self._cached_result is None:
+                raise RuntimeError("No cached scene. Run 'reconstruction' first.")
+
             if interactions is not None:
                 n_move = kwargs.get("frames_per_interaction", 30)
                 n_hold = kwargs.get("hold_frames", 10)
                 frames = []
-                if self._current_camera is None and self._cached_result is not None:
+                if self._current_camera is None:
                     self._current_camera = np.array(
                         self._cached_result.camera_params[0]["camera_to_world"]
                     )
                 for sig in interactions:
                     hold_img = self.render_view(camera_to_world=self._current_camera)
-                    for _ in range(n_hold):
-                        frames.append(hold_img)
-                    # Use get_interaction + process_interaction (same as Pi3)
-                    self.operator.get_interaction([sig])
-                    delta = self.operator.process_interaction()
+                    frames.extend([hold_img] * n_hold)
+
+                    # operator 层：单条交互信号 → delta
+                    processed = self.process(interactions=[sig])
+                    delta = processed["delta"]
                     sub_delta = [d / n_move for d in delta]
+
                     for _ in range(n_move):
-                        self._current_camera = _apply_camera_delta(
-                            self._current_camera, sub_delta
-                        )
+                        self._current_camera = _apply_camera_delta(self._current_camera, sub_delta)
                         frames.append(self.render_view(camera_to_world=self._current_camera))
+
                 hold_img = self.render_view(camera_to_world=self._current_camera)
-                for _ in range(n_hold):
-                    frames.append(hold_img)
+                frames.extend([hold_img] * n_hold)
                 return frames
+
             return self.render_view(camera_view=camera_view)
 
         elif task_type == "render_trajectory":
+            if self._cached_result is None:
+                raise RuntimeError("No cached scene. Provide images or run 'reconstruction' first.")
             return self._render_trajectory(**kwargs)
 
         else:
@@ -481,51 +502,23 @@ class LoGeRPipeline:
         visualize_ops: bool = True,
         **kwargs,
     ) -> Image.Image:
-        """Multi-turn interactive rendering. Mirrors __call__ signature.
-
-        On the first call, provide images/videos to trigger reconstruction.
-        On subsequent calls, omit images — the cached scene is reused and
-        the camera state accumulates across turns.
-
-        Internally uses operator.get_interaction() + process_interaction()
-        exactly as Pi3Pipeline.stream() does, so camera movement is consistent.
-
-        Args:
-            images / videos / image_path / video_path: same as __call__.
-                Only needed on the first call to build the scene.
-            task_type: kept for signature parity with __call__.
-            interactions: str or list of str navigation signals for this turn,
-                e.g. "forward" or ["left", "camera_r"]. Passed together to
-                get_interaction() + process_interaction(). Camera state persists
-                to the next stream() call.
-            camera_view: used when interactions is None. Same as __call__.
-            visualize_ops: kept for signature parity with __call__.
-
-        Returns:
-            PIL.Image — rendered view after applying this turn's interactions.
-
-        Typical usage::
-
-            # Turn 0: reconstruct, get initial view
-            frame = pipeline.stream(images="scene.jpg")
-
-            # Turn 1+: navigate, camera accumulates
-            frame = pipeline.stream(interactions="forward")
-            frame = pipeline.stream(interactions=["left", "camera_r"])
-        """
+        
         visual_input = videos or video_path or images or image_path
 
-        # ── New input: run reconstruction ──
+        # ── 有新输入：先做重建 ──
         if visual_input is not None:
             print("--- Stream: reconstructing scene ---")
-            self._run_inference(visual_input, **kwargs)
+            processed = self.process(images=visual_input, interval=kwargs.get("interval", -1))
+            result = self._run_inference(processed, **kwargs)
+            self._cached_result = result
+            if result.camera_params:
+                self._current_camera = np.array(result.camera_params[0]["camera_to_world"])
 
         if self._cached_result is None:
             raise RuntimeError(
                 "No scene available. Provide images/videos on the first stream() call."
             )
-
-        # ── Initialise camera if needed ──
+        
         if self._current_camera is None:
             if not self._cached_result.camera_params:
                 raise RuntimeError("No camera parameters available in cached result.")
@@ -533,7 +526,7 @@ class LoGeRPipeline:
                 self._cached_result.camera_params[0]["camera_to_world"]
             )
 
-        # ── No interactions: render current view ──
+        # ── 无交互：直接渲染当前视角 ──
         if interactions is None:
             return self.render_view(
                 result=self._cached_result,
@@ -541,21 +534,15 @@ class LoGeRPipeline:
                 camera_to_world=self._current_camera,
             )
 
-        # ── Apply interactions: get_interaction + process_interaction (same as Pi3) ──
+        # ── 有交互：operator 层处理，更新相机，渲染 ──
         if isinstance(interactions, str):
             interactions = [interactions]
 
-        print(f"[DEBUG] interactions: {interactions}")
-        print(f"[DEBUG] camera before: {self._current_camera[:3, 3]}")  # 只打位移部分
-
-        self.operator.get_interaction(interactions)
-        delta = self.operator.process_interaction()
-
-        print(f"[DEBUG] delta: {delta}")
+        processed = self.process(interactions=interactions)
+        delta = processed["delta"]
 
         self._current_camera = _apply_camera_delta(self._current_camera, delta)
-        print(f"[DEBUG] camera after:  {self._current_camera[:3, 3]}")
-
+        
 
         return self.render_view(
             result=self._cached_result,
