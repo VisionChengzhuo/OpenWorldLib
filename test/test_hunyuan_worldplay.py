@@ -21,7 +21,7 @@ pipeline = HunyuanWorldPlayPipeline.from_pretrained(
 )
 output = pipeline(
     prompt=prompt,
-    image=input_image,
+    images=input_image,
     interactions=interaction_signal,
     forward_speed=0.08,
     yaw_speed_deg=3.0,

@@ -155,7 +155,8 @@ class HunyuanWorldPlayPipeline(PipelineABC):
         self,
         *,
         prompt: str,
-        image: Optional[Image.Image] = None,
+        images: Optional[Image.Image] = None,
+        image_path: Optional[str] = None,
         interactions: Optional[str] = None,
         num_frames: int = 125,
         pose: Optional[str] = None,
@@ -180,10 +181,11 @@ class HunyuanWorldPlayPipeline(PipelineABC):
     ):
         """
         Pipeline 调用入口
-        
+
         Args:
             prompt: 文本提示
-            image: 参考图像（PIL.Image）
+            images: 参考图像（PIL.Image）
+            image_path: 参考图像路径（如果 images 未提供则使用）
             pose: 相机轨迹（如 "w-10, right-10, d-11"）
             aspect_ratio: 宽高比
             num_frames: 帧数
@@ -201,7 +203,7 @@ class HunyuanWorldPlayPipeline(PipelineABC):
             user_height: 用户指定高度
             user_width: 用户指定宽度
             **kwargs: 其他参数
-            
+
         Returns:
             HunyuanVideoPipelineOutput: 包含生成的视频帧
         """
@@ -212,6 +214,17 @@ class HunyuanWorldPlayPipeline(PipelineABC):
         if pitch_speed_deg is not None:
             self.operators.pitch_speed_deg = pitch_speed_deg
 
+        # Handle image input: prefer images, fallback to image_path
+        if images is not None:
+            input_image = images
+        elif image_path is not None:
+            try:
+                input_image = Image.open(image_path).convert("RGB")
+            except Exception as e:
+                raise ValueError(f"Cannot load image from image_path: {image_path}") from e
+        else:
+            raise ValueError("Either images or image_path must be provided")
+
         video_length = num_frames
         pose_value = interactions if interactions is not None else pose
         if pose_value is None:
@@ -221,7 +234,7 @@ class HunyuanWorldPlayPipeline(PipelineABC):
             print(f"video_length {video_length} != inferred_video_length {inferred_video_length}, auto setting")
             video_length = inferred_video_length
         processed = self.process(
-            input_=image,
+            input_=input_image,
             interaction=pose_value,
             video_length=video_length,
         )
