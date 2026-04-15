@@ -17,6 +17,12 @@ def _resolve_path(model_path: Union[str, Dict], key: str) -> str:
     return model_path
 
 
+def _resolve_optional_path(model_path: Union[str, Dict], key: str):
+    if isinstance(model_path, dict):
+        return model_path.get(key)
+    return None
+
+
 def load_matrix_game2_pipeline(model_path: Union[str, Dict], device: str):
     from openworldlib.pipelines.matrix_game.pipeline_matrix_game_2 import MatrixGame2Pipeline
     return MatrixGame2Pipeline.from_pretrained(
@@ -30,6 +36,34 @@ def load_hunyuan_game_craft_pipeline(model_path: Union[str, Dict], device: str):
     from openworldlib.pipelines.hunyuan_world.pipeline_hunyuan_game_craft import HunyuanGameCraftPipeline
     return HunyuanGameCraftPipeline.from_pretrained(
         model_path=_resolve_path(model_path, "pretrained_model_path"),
+        device=device,
+    )
+
+
+def load_infinite_world_pipeline(model_path: Union[str, Dict], device: str):
+    from openworldlib.pipelines.infinite_world.pipeline_infinite_world import InfiniteWorldPipeline
+
+    required_components = None
+    if isinstance(model_path, dict):
+        required_components = {}
+        optional_keys = {
+            "checkpoint_path": "checkpoint_path",
+            "vae_model_path": "vae_model_path",
+            "vae_pth": "vae_pth",
+            "text_encoder_model_path": "text_encoder_model_path",
+            "text_encoder_checkpoint_path": "text_encoder_checkpoint_path",
+            "tokenizer_path": "tokenizer_path",
+        }
+        for src_key, dst_key in optional_keys.items():
+            value = _resolve_optional_path(model_path, src_key)
+            if value is not None:
+                required_components[dst_key] = value
+        if len(required_components) == 0:
+            required_components = None
+
+    return InfiniteWorldPipeline.from_pretrained(
+        model_path=_resolve_path(model_path, "pretrained_model_path"),
+        required_components=required_components,
         device=device,
     )
 
@@ -95,6 +129,7 @@ def load_cosmos_predict2p5_pipeline(model_path: Union[str, Dict], device: str, t
 ## utilize lazy loader to load different tasks pipeline
 video_gen_pipe = {
     "matrix-game2": load_matrix_game2_pipeline,
+    "infinite-world": load_infinite_world_pipeline,
     "wan2p2": load_wan2p2_pipeline,
     "hunyuan-game-craft": load_hunyuan_game_craft_pipeline,
     "lingbot-world": load_lingbot_world_pipeline,
