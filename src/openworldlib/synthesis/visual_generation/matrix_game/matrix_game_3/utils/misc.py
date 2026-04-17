@@ -1,22 +1,4 @@
-import numpy as np
-import random
-import torch
+# Reuse misc helpers from Matrix-Game-2 to avoid duplication.
+from ...matrix_game_2.utils.misc import merge_dict_list, set_seed
 
-
-def set_seed(seed: int, deterministic: bool = False):
-    """
-    Helper function for reproducible behavior to set the seed in `random`, `numpy`, `torch`.
-
-    Args:
-        seed (`int`):
-            The seed to set.
-        deterministic (`bool`, *optional*, defaults to `False`):
-            Whether to use deterministic algorithms where available. Can slow down training.
-    """
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-
-    if deterministic:
-        torch.use_deterministic_algorithms(True)
+__all__ = ["set_seed", "merge_dict_list"]
