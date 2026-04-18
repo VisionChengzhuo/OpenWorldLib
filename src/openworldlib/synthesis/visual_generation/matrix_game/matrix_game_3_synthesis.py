@@ -100,6 +100,7 @@ class MatrixGame3Synthesis(BaseSynthesis):
         # We keep defaults that work for single GPU.
         args = SimpleNamespace(
             output_dir=str(Path.cwd() / "output" / "matrix_game_3"),
+            ckpt_dir=model_root,
             size="704*1280",
             save_name="matrix_game_3",
             num_iterations=12,
@@ -168,6 +169,7 @@ class MatrixGame3Synthesis(BaseSynthesis):
             self.pipeline.args = args
 
         args.output_dir = str(out_dir)
+        args.ckpt_dir = str(self.checkpoint_dir)
         args.size = str(size)
         args.save_name = str(save_name)
         args.num_iterations = int(num_iterations)

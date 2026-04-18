@@ -1,8 +1,16 @@
 import logging
 import torch
 import torch._dynamo
-torch._dynamo.config.recompile_limit = 1024
-torch._dynamo.config.suppress_errors = True
+
+try:
+    _dynamo_config = getattr(torch._dynamo, "config", None)
+    if _dynamo_config is not None:
+        if hasattr(_dynamo_config, "recompile_limit"):
+            _dynamo_config.recompile_limit = 1024
+        if hasattr(_dynamo_config, "suppress_errors"):
+            _dynamo_config.suppress_errors = True
+except Exception:
+    pass
 
 import torch.nn as nn
 import torch.nn.functional as F

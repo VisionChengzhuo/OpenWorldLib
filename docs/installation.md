@@ -30,7 +30,7 @@ In this document, we list the installation requirements and installation scripts
     <td align="center">3.12 (recommended)</td>
     <td align="center">12.1+</td>
     <td>PyTorch 2.10.0, transformers 4.57.3, FlashAttention (optional but recommended)</td>
-    <td><code>bash scripts/setup/default_install.sh</code><br/><code>bash scripts/test_inference/test_nav_video_gen.sh matrix-game-3</code></td>
+    <td><code>bash scripts/setup/matrix_game_3_install.sh</code><br/><code>bash scripts/test_inference/test_nav_video_gen.sh matrix-game-3</code></td>
   </tr>
   <tr>
     <td align="center">Hunyuan-GameCraft</td>

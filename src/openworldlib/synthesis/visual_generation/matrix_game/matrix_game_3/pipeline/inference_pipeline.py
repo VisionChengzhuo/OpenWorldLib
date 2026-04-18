@@ -23,7 +23,7 @@ from ......base_models.diffusion_model.video.wan_2p2.distributed.sequence_parall
     sp_dit_forward,
 )
 from ......base_models.diffusion_model.video.wan_2p2.distributed.util import get_world_size
-from ......base_models.diffusion_model.video.wan_2p2.modules.model import WanModel
+from ..wan.modules.model import WanModel
 from ......base_models.diffusion_model.video.wan_2p1.modules.t5 import T5EncoderModel
 from ......base_models.diffusion_model.video.wan_2p2.modules.vae2_2 import Wan2_2_VAE
 from ......base_models.diffusion_model.video.wan_2p1.utils.fm_solvers_unipc import (
