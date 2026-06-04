@@ -108,7 +108,7 @@ def encode_image(name, image_encoder, images, device="cuda", image_processor=Non
         raise ValueError(f"Unsupported image encoder: {name}")
 
 
-def get_vae(name, model_path, device="cuda", dtype=None, config=None):
+def get_vae(name, model_path, device="cuda", dtype=None, config=None, **kwargs):
     if "LTX2VAE_diffusers" in name:
         from openworldlib.base_models.diffusion_model.video.ltx2_vae import get_vae as _get
         assert config is not None, "config.vae is required for LTX2VAE_diffusers"
@@ -116,6 +116,7 @@ def get_vae(name, model_path, device="cuda", dtype=None, config=None):
             model_path=config.vae_pretrained,
             device=device,
             dtype=dtype,
+            **kwargs,
         )
     else:
         raise ValueError(f"Unsupported VAE type for Sana-WM cropped vendor: {name}")

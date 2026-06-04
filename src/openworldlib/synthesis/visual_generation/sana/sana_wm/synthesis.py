@@ -41,10 +41,10 @@ from sana_wm_diffusion import FlowEuler, LTXFlowEuler, DPMS
 from sana_wm_diffusion.model.builder import (
     build_model,
     get_tokenizer_and_text_encoder,
-    get_vae,
     vae_decode,
     vae_encode,
 )
+from openworldlib.base_models.diffusion_model.video.ltx2_vae import get_vae
 from sana_wm_diffusion.model.utils import get_weight_dtype
 from openworldlib.base_models.diffusion_model.video.ltx2_refiner import (
     DiffusersLTX2Refiner,
@@ -334,7 +334,7 @@ class SanaWMSynthesis(BaseSynthesis):
         print("[SanaWMSynthesis] Loading VAE (LTX-2)...")
         vae = get_vae(
             model_path=str(root),
-            device=self.device,
+            device=device_obj,
             dtype=torch.bfloat16,
             tile_sample_stride_num_frames=getattr(config.vae, "tile_sample_stride_num_frames", 64),
             tile_sample_min_num_frames=getattr(config.vae, "tile_sample_min_num_frames", 96),
