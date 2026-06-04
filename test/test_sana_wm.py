@@ -7,21 +7,21 @@ Usage (no GPU — dry-run only, very slow):
     python test/test_sana_wm.py
 """
 
+from PIL.Image import Image
+
+
 import os
 import torch
 from PIL import Image
 from diffusers.utils import export_to_video
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.openworldlib.pipelines.sana_wm.pipeline_sana_wm import SanaWMPipeline
-# from .pipelines.sana_wm.pipeline_sana_wm import SanaWMPipeline
+from openworldlib.pipelines.sana_wm.pipeline_sana_wm import SanaWMPipeline
 
 
-image_path = "/home/dataset-assist-0/usr/lh/hdl/Sana-main/asset/sana_wm/demo_0.png"
-pretrained_model_path = "/home/dataset-assist-0/usr/lh/hdl/sana-ckpts"
-gemma_path = "/home/dataset-assist-0/usr/lh/hdl/gemma"
-input_image = Image.open(image_path).convert("RGB")
-prompt = "A first-person view from a strictly stationary observation point across an immense dry lakebed bordered by low mountain ranges. A black sports car occupies the central foreground on the pale, compacted surface, aligned toward the open horizon beneath a vast blue sky. The environment is broad and minimal, with flat beige desert crust, faint tire-worn texture, distant rocky ridgelines, and a few thin clouds stretching across the upper sky. Bright midday sunlight creates crisp shadows under the vehicle and a clean, high-visibility atmosphere of speed, openness, and isolation. The observer�s perspective remains fixed, with no dynamic camera movement and no actions taken by the person recording. Autonomous motion belongs to the world itself: dust trails sweep low across the ground, heat haze shimmers near the horizon, clouds drift slowly, and the car�s tires kick up fine desert grit."
+image_path = "./data/test_case/test_image_case1/ref_image.png"
+pretrained_model_path = "Efficient-Large-Model/SANA-WM_bidirectional"
+gemma_path = "Efficient-Large-Model/gemma-2-2b-it"
+input_image: Image = Image.open(image_path).convert("RGB")
+prompt = "A charming medieval village with cobblestone streets, thatched-roof houses."
 
 pipeline = SanaWMPipeline.from_pretrained(
     model_path=pretrained_model_path,

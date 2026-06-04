@@ -10,13 +10,22 @@ import torch.nn.functional as F
 from einops import rearrange
 from omegaconf import MISSING, OmegaConf
 
-from tools.download import find_model
 
 __all__ = [
     "WanVAE",
 ]
 
 CACHE_T = 2
+
+def find_model(model_name):
+    """
+    Finds a pre-trained G.pt model, downloading it if necessary. Alternatively, loads a model from a local path.
+    """
+    if model_name in pretrained_models:  # Find/download our pre-trained G.pt checkpoints
+        return download_model(model_name)
+    else:  # Load a custom Sana checkpoint:
+        assert os.path.isfile(model_name), f"Could not find Sana checkpoint at {model_name}"
+        return torch.load(model_name, map_location=lambda storage, loc: storage)
 
 
 class CausalConv3d(nn.Conv3d):

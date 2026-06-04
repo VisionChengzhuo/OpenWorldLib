@@ -1,12 +1,10 @@
-# codeflicker-fix: COMPAT-Issue-001/nrcp8vjpoyrpfjxql0ey
-# Moved from pipelines/sana/ to pipelines/sana_wm/ to match test import path.
 import torch
 import numpy as np
 from PIL import Image
 from typing import Any, Optional
 
 from ...operators.sana_wm_operator import SanaWMOperator
-from ...synthesis.visual_generation.sana.sana_wm.synthesis import SanaWMSynthesis
+from ...synthesis.visual_generation.sana.sana_wm.sana_wm_synthesis import SanaWMSynthesis
 from ...memories.visual_synthesis.sana.sana_wm_memory import SanaWMMemory
 
 
@@ -79,7 +77,6 @@ class SanaWMPipeline:
         if isinstance(images, str):
             images = Image.open(images).convert("RGB")
 
-        # codeflicker-fix: LOGIC-Issue-002/nrcp8vjpoyrpfjxql0ey
         # Use "pil_image" key (consistent with operator.process_perception return).
         perception = self.operators.process_perception(images)
 
@@ -103,8 +100,6 @@ class SanaWMPipeline:
             "intrinsics_vec4": interaction_out["intrinsics_vec4"],
         }
 
-    # codeflicker-fix: LOGIC-Issue-002/nrcp8vjpoyrpfjxql0ey
-    # __call__ now uses processed["pil_image"] (consistent key).
     def __call__(
         self,
         images: Any = None,

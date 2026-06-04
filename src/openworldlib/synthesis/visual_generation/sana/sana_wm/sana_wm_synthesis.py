@@ -1,6 +1,3 @@
-# codeflicker-fix: COMPAT-Issue-006/nrcp8vjpoyrpfjxql0ey
-# Set before any sana_wm_diffusion import to avoid xformers/SDPA conflict
-# (torch 2.9 + xformers 0.0.33 compatibility).
 import os
 
 os.environ.setdefault("DISABLE_XFORMERS", "1")
@@ -89,7 +86,6 @@ def _resolve_flow_shift(scheduler_cfg: SchedulerConfig, override: float | None) 
     )
 
 
-# codeflicker-fix: EDGE-Issue-004/nrcp8vjpoyrpfjxql0ey
 # Restore upstream-style upper_bound to avoid snapping beyond trajectory length.
 def _snap_num_frames(num_frames: int, vae_time_stride: int = 8, upper_bound: int | None = None) -> int:
     """Snap num_frames to ``8k + 1`` required by LTX-2 VAE.
@@ -330,8 +326,6 @@ class SanaWMSynthesis(BaseSynthesis):
         # Ensure the vae_pretrained path points to the local root
         config.vae.vae_pretrained = str(root)
 
-        # codeflicker-refactor: ltx-base-6/2vvzxiatcoizx40gv1il
-        # Use base_models ltx2_vae.get_vae() for cross-model reuse.
         print("[SanaWMSynthesis] Loading VAE (LTX-2)...")
         vae = get_vae(
             model_path=str(root),
@@ -477,7 +471,6 @@ class SanaWMSynthesis(BaseSynthesis):
                 - ``c2w``: ``(T', 4, 4)`` aligned c2w trajectory
                 - ``latent``: raw Sana latent (CPU tensor)
         """
-        # codeflicker-fix: EDGE-Issue-004/nrcp8vjpoyrpfjxql0ey
         # Snap frame count with upper_bound to stay within trajectory length.
         vae_stride = self.config.vae.vae_stride
         max_frames = min(len(c2ws), len(intrinsics_vec4))
@@ -502,8 +495,6 @@ class SanaWMSynthesis(BaseSynthesis):
             step, cfg_scale, flow_shift, seed, sampling_algo,
         )
 
-        # codeflicker-fix: LOGIC-Issue-003/nrcp8vjpoyrpfjxql0ey
-        # Renamed c2w → c2ws (matched parameter name).
         # ── 3. Decode ──────────────────────────────────────────────────
         if self.refiner is not None:
             video = self._refine(sana_latent, prompt, fps, seed)
