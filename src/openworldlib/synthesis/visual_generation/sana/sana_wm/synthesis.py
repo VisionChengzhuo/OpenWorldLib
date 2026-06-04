@@ -46,9 +46,9 @@ from sana_wm_diffusion.model.builder import (
     vae_encode,
 )
 from sana_wm_diffusion.model.utils import get_weight_dtype
-from sana_wm_diffusion.refiner.diffusers_ltx2_refiner import (
-    STAGE_2_DISTILLED_SIGMA_VALUES,
+from openworldlib.base_models.diffusion_model.video.ltx2_refiner import (
     DiffusersLTX2Refiner,
+    STAGE_2_DISTILLED_SIGMA_VALUES,
 )
 from sana_wm_diffusion.utils.cam_utils import compute_raymap, get_pose_inverse
 from sana_wm_diffusion.utils.camctrl_config import (
@@ -404,7 +404,7 @@ class SanaWMSynthesis(BaseSynthesis):
             gemma_root = root / "refiner" / "text_encoder"
             if (refiner_root / "transformer" / "config.json").is_file():
                 print("[SanaWMSynthesis] Building LTX-2 refiner...")
-                from sana_wm_diffusion.refiner.diffusers_ltx2_refiner import (
+                from openworldlib.base_models.diffusion_model.video.ltx2_refiner import (
                     DiffusersLTX2Refiner,
                 )
 
