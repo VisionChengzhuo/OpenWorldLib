@@ -17,7 +17,7 @@
 import torch
 import torch.nn as nn
 
-from sana_wm_diffusion.model.builder import MODELS
+from ..builder import MODELS
 
 from .ladd_blocks import DiscHead
 from .sana_multi_scale import SanaMSCM

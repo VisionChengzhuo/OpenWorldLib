@@ -1491,7 +1491,7 @@ def fused_bigdn_bidi_chunkwise(
 
 def _default_dot_prec():
     """Pull dot_precision from `_resolve_launch_config` (honors PRECISION_OVERRIDE)."""
-    from sana_wm_diffusion.model.ops.fused_gdn import _resolve_launch_config
+    from .fused_gdn import _resolve_launch_config
 
     _, dot_prec, _, _ = _resolve_launch_config()
     return dot_prec

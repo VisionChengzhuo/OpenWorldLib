@@ -44,7 +44,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from fla.modules import ShortConvolution
 
-from sana_wm_diffusion.utils.chunk_utils import is_chunk_causal_request, normalize_chunk_index
+from ...utils.chunk_utils import is_chunk_causal_request, normalize_chunk_index
 
 from .sana_camctrl_blocks import _maybe_drop_cam_branch, prepare_prope_fns
 from .sana_gdn_blocks import (

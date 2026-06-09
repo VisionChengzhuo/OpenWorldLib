@@ -24,9 +24,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from timm.models.layers import DropPath
 
-from sana_wm_diffusion.model.builder import MODELS
-from sana_wm_diffusion.model.nets.basic_modules import CachedGLUMBConvTemp, ChunkGLUMBConvTemp, GLUMBConv, GLUMBConvTemp, Mlp
-from sana_wm_diffusion.model.nets.sana_blocks import (
+from ..builder import MODELS
+from .basic_modules import CachedGLUMBConvTemp, ChunkGLUMBConvTemp, GLUMBConv, GLUMBConvTemp, Mlp
+from .sana_blocks import (
     CachedCausalAttention,
     CaptionEmbedder,
     CausalWanRotaryPosEmbed,
@@ -46,15 +46,15 @@ from sana_wm_diffusion.model.nets.sana_blocks import (
     WindowAttention,
     t2i_modulate,
 )
-from sana_wm_diffusion.model.nets.sana_multi_scale import Sana, get_2d_sincos_pos_embed
-from sana_wm_diffusion.model.utils import auto_grad_checkpoint
-from sana_wm_diffusion.model.wan.model import BlockHook
-from sana_wm_diffusion.utils.dist_utils import get_rank
-from sana_wm_diffusion.utils.import_utils import is_triton_module_available, is_xformers_available
+from .sana_multi_scale import Sana, get_2d_sincos_pos_embed
+from ..utils import auto_grad_checkpoint
+from ..wan.model import BlockHook
+from ...utils.dist_utils import get_rank
+from ...utils.import_utils import is_triton_module_available, is_xformers_available
 
 _triton_modules_available = False
 if is_triton_module_available():
-    from sana_wm_diffusion.model.nets.fastlinear.modules import TritonLiteMLA, TritonMBConvPreGLU
+    from .fastlinear.modules import TritonLiteMLA, TritonMBConvPreGLU
 
     _triton_modules_available = True
 

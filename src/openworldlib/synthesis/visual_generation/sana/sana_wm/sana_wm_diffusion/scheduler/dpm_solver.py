@@ -16,8 +16,8 @@
 
 import torch
 
-from sana_wm_diffusion.model import gaussian_diffusion as gd
-from sana_wm_diffusion.model.dpm_solver import DPM_Solver, NoiseScheduleFlow, NoiseScheduleVP, model_wrapper
+from ..model import gaussian_diffusion as gd
+from ..model.dpm_solver import DPM_Solver, NoiseScheduleFlow, NoiseScheduleVP, model_wrapper
 
 
 def DPMS(

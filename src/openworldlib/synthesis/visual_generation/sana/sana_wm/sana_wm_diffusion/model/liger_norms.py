@@ -45,7 +45,7 @@ def get_rmsnorm_class() -> Type[nn.Module]:
     """
     # Explicitly disabled
     if os.environ.get("SANA_USE_LIGER", "") in ("0", "false", "False"):
-        from sana_wm_diffusion.model.norms import RMSNorm
+        from .norms import RMSNorm
 
         return RMSNorm
 
@@ -53,7 +53,7 @@ def get_rmsnorm_class() -> Type[nn.Module]:
     try:
         from liger_kernel.transformers import LigerRMSNorm
     except ImportError:
-        from sana_wm_diffusion.model.norms import RMSNorm
+        from .norms import RMSNorm
 
         return RMSNorm
 

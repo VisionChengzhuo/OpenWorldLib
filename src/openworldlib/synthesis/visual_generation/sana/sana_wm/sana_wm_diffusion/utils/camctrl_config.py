@@ -17,7 +17,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
-from sana_wm_diffusion.utils.config import (
+from .config import (
     ModelVideoConfig,
     SanaVideoConfig,
     TrainVideoConfig,

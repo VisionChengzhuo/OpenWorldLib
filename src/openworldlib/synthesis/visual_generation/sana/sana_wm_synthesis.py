@@ -6,7 +6,6 @@ import gc
 import logging
 import math
 import random
-import sys
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -24,39 +23,30 @@ from termcolor import colored
 from torchvision import transforms as T
 from tqdm import tqdm
 
-# ── Vendor path ──────────────────────────────────────────────────────
-# ``sana_wm_diffusion/`` is a vendored subtree in the same directory as
-# ``synthesis.py``.  We add it to ``sys.path`` so that its internal imports
-# (``import sana_wm_diffusion.xxx``) resolve correctly.
-_VENDOR_DIR = str(Path(__file__).resolve().parent)
-if _VENDOR_DIR not in sys.path:
-    sys.path.insert(0, _VENDOR_DIR)
-
-# Import all Sana-WM model nets to register them with MODELS registry.
-import sana_wm_diffusion.model.nets  # noqa: F401
-from sana_wm_diffusion import FlowEuler, LTXFlowEuler, DPMS
-from sana_wm_diffusion.model.builder import (
+from .sana_wm.sana_wm_diffusion.model import nets as _sana_wm_nets  # noqa: F401
+from .sana_wm.sana_wm_diffusion import FlowEuler, LTXFlowEuler, DPMS
+from .sana_wm.sana_wm_diffusion.model.builder import (
     build_model,
     get_tokenizer_and_text_encoder,
     vae_decode,
     vae_encode,
 )
 from openworldlib.base_models.diffusion_model.video.ltx2_vae import get_vae
-from sana_wm_diffusion.model.utils import get_weight_dtype
+from .sana_wm.sana_wm_diffusion.model.utils import get_weight_dtype
 from openworldlib.base_models.diffusion_model.video.ltx2_refiner import (
     DiffusersLTX2Refiner,
     STAGE_2_DISTILLED_SIGMA_VALUES,
 )
-from sana_wm_diffusion.utils.cam_utils import compute_raymap, get_pose_inverse
-from sana_wm_diffusion.utils.camctrl_config import (
+from .sana_wm.sana_wm_diffusion.utils.cam_utils import compute_raymap, get_pose_inverse
+from .sana_wm.sana_wm_diffusion.utils.camctrl_config import (
     ModelVideoCamCtrlConfig,
     model_video_camctrl_init_config,
 )
-from sana_wm_diffusion.utils.chunk_utils import get_chunk_index_from_config
-from sana_wm_diffusion.utils.config import AEConfig, SchedulerConfig, TextEncoderConfig
-from sana_wm_diffusion.utils.logger import get_root_logger
+from .sana_wm.sana_wm_diffusion.utils.chunk_utils import get_chunk_index_from_config
+from .sana_wm.sana_wm_diffusion.utils.config import AEConfig, SchedulerConfig, TextEncoderConfig
+from .sana_wm.sana_wm_diffusion.utils.logger import get_root_logger
 
-from ....base_synthesis import BaseSynthesis
+from ...base_synthesis import BaseSynthesis
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -634,8 +624,6 @@ class SanaWMSynthesis(BaseSynthesis):
         if algo == "flow_euler":
             return FlowEuler(self.model, **base).sample(z, steps=steps)
         if algo == "flow_dpm-solver":
-            from sana_wm_diffusion import DPMS
-
             return DPMS(
                 self.model,
                 condition=cond,

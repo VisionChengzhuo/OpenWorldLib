@@ -23,9 +23,9 @@ import torch.nn as nn
 from termcolor import colored
 from timm.models.layers import DropPath
 
-from sana_wm_diffusion.model.builder import MODELS
-from sana_wm_diffusion.model.nets.basic_modules import DWMlp, GLUMBConv, MBConvPreGLU, Mlp
-from sana_wm_diffusion.model.nets.sana_blocks import (
+from ..builder import MODELS
+from .basic_modules import DWMlp, GLUMBConv, MBConvPreGLU, Mlp
+from .sana_blocks import (
     Attention,
     CaptionEmbedder,
     FlashAttention,
@@ -38,15 +38,15 @@ from sana_wm_diffusion.model.nets.sana_blocks import (
     TimestepEmbedder,
     t2i_modulate,
 )
-from sana_wm_diffusion.model.norms import RMSNorm
-from sana_wm_diffusion.model.utils import auto_grad_checkpoint, to_2tuple
-from sana_wm_diffusion.utils.dist_utils import get_rank
-from sana_wm_diffusion.utils.import_utils import is_triton_module_available
-from sana_wm_diffusion.utils.logger import get_root_logger
+from ..norms import RMSNorm
+from ..utils import auto_grad_checkpoint, to_2tuple
+from ...utils.dist_utils import get_rank
+from ...utils.import_utils import is_triton_module_available
+from ...utils.logger import get_root_logger
 
 _triton_modules_available = False
 if is_triton_module_available():
-    from sana_wm_diffusion.model.nets.fastlinear.modules import TritonLiteMLA, TritonMBConvPreGLU
+    from .fastlinear.modules import TritonLiteMLA, TritonMBConvPreGLU
 
     _triton_modules_available = True
 

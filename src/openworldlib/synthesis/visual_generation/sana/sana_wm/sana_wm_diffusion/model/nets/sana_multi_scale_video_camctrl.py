@@ -24,9 +24,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from timm.models.layers import DropPath
 
-from sana_wm_diffusion.model.builder import MODELS
-from sana_wm_diffusion.model.nets.basic_modules import GLUMBConv, GLUMBConvTemp, Mlp
-from sana_wm_diffusion.model.nets.sana_blocks import (
+from ..builder import MODELS
+from .basic_modules import GLUMBConv, GLUMBConvTemp, Mlp
+from .sana_blocks import (
     CaptionEmbedder,
     CausalWanRotaryPosEmbed,
     ClipVisionProjection,
@@ -41,12 +41,12 @@ from sana_wm_diffusion.model.nets.sana_blocks import (
     WindowAttention,
     t2i_modulate,
 )
-from sana_wm_diffusion.model.nets.sana_multi_scale import Sana, get_2d_sincos_pos_embed
-from sana_wm_diffusion.model.registry import ATTENTION_BLOCKS, FFN_BLOCKS
-from sana_wm_diffusion.model.utils import auto_grad_checkpoint, create_block_mask_cached, generate_temporal_head_mask_mod
-from sana_wm_diffusion.model.wan.model import BlockHook
-from sana_wm_diffusion.utils.dist_utils import get_rank
-from sana_wm_diffusion.utils.import_utils import is_xformers_available
+from .sana_multi_scale import Sana, get_2d_sincos_pos_embed
+from ..registry import ATTENTION_BLOCKS, FFN_BLOCKS
+from ..utils import auto_grad_checkpoint, create_block_mask_cached, generate_temporal_head_mask_mod
+from ..wan.model import BlockHook
+from ...utils.dist_utils import get_rank
+from ...utils.import_utils import is_xformers_available
 
 from .sana_camctrl_blocks import (
     _maybe_drop_cam_branch,
@@ -1226,7 +1226,7 @@ class SanaMSVideoCamCtrl(Sana):
         return imgs
 
     def create_diagonal_mask(self, N_pad, N, num_frames, block_size=1, mask_type="nlogn"):
-        from sana_wm_diffusion.utils.attn_mask.gen_nlogn_mask import (
+        from ...utils.attn_mask.gen_nlogn_mask import (
             gen_linear_mask_shrinked,
             gen_log_mask_shrinked,
             gen_truncated_mask_shrinked,

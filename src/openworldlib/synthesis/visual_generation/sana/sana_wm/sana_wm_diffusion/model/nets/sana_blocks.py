@@ -28,9 +28,9 @@ from timm.models.vision_transformer import Attention as Attention_
 from timm.models.vision_transformer import Mlp
 from transformers import AutoModelForCausalLM
 
-from sana_wm_diffusion.model.norms import RMSNorm
-from sana_wm_diffusion.model.utils import get_same_padding, to_2tuple, to_3tuple
-from sana_wm_diffusion.utils.import_utils import is_xformers_available
+from ..norms import RMSNorm
+from ..utils import get_same_padding, to_2tuple, to_3tuple
+from ...utils.import_utils import is_xformers_available
 
 _xformers_available = False if os.environ.get("DISABLE_XFORMERS", "0") == "1" else is_xformers_available()
 if _xformers_available:

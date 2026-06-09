@@ -4,7 +4,7 @@ from PIL import Image
 from typing import Any, Optional
 
 from ...operators.sana_wm_operator import SanaWMOperator
-from ...synthesis.visual_generation.sana.sana_wm.sana_wm_synthesis import SanaWMSynthesis
+from ...synthesis.visual_generation.sana.sana_wm_synthesis import SanaWMSynthesis
 from ...memories.visual_synthesis.sana.sana_wm_memory import SanaWMMemory
 
 

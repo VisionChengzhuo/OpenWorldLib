@@ -21,9 +21,9 @@ import torch
 import torch.nn as nn
 from timm.models.vision_transformer import Mlp
 
-from sana_wm_diffusion.model.act import build_act, get_act_name
-from sana_wm_diffusion.model.norms import build_norm, get_norm_name
-from sana_wm_diffusion.model.utils import get_same_padding, val2tuple
+from ..act import build_act, get_act_name
+from ..norms import build_norm, get_norm_name
+from ..utils import get_same_padding, val2tuple
 
 
 class ConvLayer(nn.Module):

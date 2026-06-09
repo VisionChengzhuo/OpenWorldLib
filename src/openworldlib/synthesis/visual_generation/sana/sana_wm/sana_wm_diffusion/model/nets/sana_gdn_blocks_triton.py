@@ -36,27 +36,27 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from sana_wm_diffusion.model.nets.sana_camctrl_blocks import (
+from .sana_camctrl_blocks import (
     _maybe_drop_cam_branch,
     _prepare_ray_apply_fns,
 )
-from sana_wm_diffusion.model.nets.sana_gdn_blocks import BidirectionalGDN
-from sana_wm_diffusion.model.nets.sana_gdn_camctrl_blocks import (
+from .sana_gdn_blocks import BidirectionalGDN
+from .sana_gdn_camctrl_blocks import (
     BidirectionalGDNUCPESinglePathLiteLA,
 )
-from sana_wm_diffusion.model.ops.fused_cam_gdn import (
+from ..ops.fused_cam_gdn import (
     _invert_SE3,
     _prepare_ucpe_rope_tables,
     _process_camera_conditions_raymats_only,
     cam_prep_func,
 )
-from sana_wm_diffusion.model.ops.fused_gdn import (
+from ..ops.fused_gdn import (
     fused_bigdn_func,
     fused_qk_inv_rms,
     prepare_rope_tables,
 )
-from sana_wm_diffusion.model.ops.fused_gdn_chunkwise import cam_scan_bidi_chunkwise
-from sana_wm_diffusion.model.registry import ATTENTION_BLOCKS
+from ..ops.fused_gdn_chunkwise import cam_scan_bidi_chunkwise
+from ..registry import ATTENTION_BLOCKS
 
 
 @ATTENTION_BLOCKS.register_module()

@@ -11,8 +11,8 @@ from diffusers.models.modeling_utils import ModelMixin
 
 from openworldlib.base_models.diffusion_model.video.wan_2p1.modules.attention import flash_attention
 
-from sana_wm_diffusion.model.nets.basic_modules import GLUMBConvTemp, Mlp
-from sana_wm_diffusion.utils.logger import get_logger
+from ..nets.basic_modules import GLUMBConvTemp, Mlp
+from ...utils.logger import get_logger
 
 __all__ = ["WanModel"]
 

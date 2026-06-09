@@ -29,7 +29,7 @@ from transformers import (
 )
 from transformers import logging as transformers_logging
 
-from sana_wm_diffusion.model.utils import set_fp32_attention, set_grad_checkpoint
+from .utils import set_fp32_attention, set_grad_checkpoint
 
 MODELS = Registry("models")
 

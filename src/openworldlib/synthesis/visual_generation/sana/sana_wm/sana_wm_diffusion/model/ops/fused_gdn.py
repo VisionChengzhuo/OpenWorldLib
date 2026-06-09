@@ -252,7 +252,7 @@ def fused_bigdn_func(
     Thin entry point kept for call-site stability; delegates to
     :func:`fused_bigdn_bidi_chunkwise` from ``fused_gdn_chunkwise``.
     """
-    from sana_wm_diffusion.model.ops.fused_gdn_chunkwise import fused_bigdn_bidi_chunkwise
+    from .fused_gdn_chunkwise import fused_bigdn_bidi_chunkwise
 
     return fused_bigdn_bidi_chunkwise(
         qkv,

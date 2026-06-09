@@ -44,7 +44,7 @@ import torch
 import triton
 import triton.language as tl
 
-from sana_wm_diffusion.model.nets.sana_camctrl_blocks import (
+from ..nets.sana_camctrl_blocks import (
     compute_fov_from_fx_xi,
     ucm_unproject_grid_fov,
     world_to_ray_mats,

@@ -28,8 +28,8 @@ from einops import rearrange
 from fla.modules import ShortConvolution
 from timm.models.vision_transformer import Attention as Attention_
 
-from sana_wm_diffusion.model.liger_norms import get_rmsnorm_class
-from sana_wm_diffusion.utils.chunk_utils import (
+from ..liger_norms import get_rmsnorm_class
+from ...utils.chunk_utils import (
     chunk_index_from_chunk_size,
     is_chunk_causal_request,
     is_uniform_chunking,
@@ -38,7 +38,7 @@ from sana_wm_diffusion.utils.chunk_utils import (
 )
 
 RMSNorm = get_rmsnorm_class()
-from sana_wm_diffusion.model.registry import ATTENTION_BLOCKS
+from ..registry import ATTENTION_BLOCKS
 
 _HAS_FLEX_ATTENTION = bool(int(os.environ.get("SANA_USE_FLEX_ATTENTION", "0")))
 
