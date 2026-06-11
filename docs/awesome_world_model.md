@@ -145,6 +145,7 @@
 
 - **WorldCanvas** · [[Paper]](https://arxiv.org/pdf/2512.16924) [[Code]](https://github.com/pPetrichor/WorldCanvas)
 - **RealWonder** · [[Paper]](https://arxiv.org/pdf/2603.05449) [[Code]](https://github.com/liuwei283/RealWonder)
+- **ReactiveGWM** · [[Paper]](https://arxiv.org/abs/2605.15256) [[Code]](https://github.com/INV-WZQ/ReactiveGWM) interactive game world generation
 - **emu3.5** · [[Paper]](https://arxiv.org/pdf/2510.26583) [[Code]](https://github.com/baaivision/Emu3.5)
 - **MakeAnything** · [[Paper]](https://arxiv.org/pdf/2502.01572) [[Code]](https://github.com/showlab/MakeAnything)
 - **WorldCam** · [[Paper]](https://arxiv.org/pdf/2603.16871) [[Code]](https://github.com/cvlab-kaist/WorldCam)
@@ -193,6 +194,13 @@
 - **WorldCache** · [[Paper]](https://arxiv.org/pdf/2603.06331) [[Code]](https://github.com/FofGofx/WorldCache)
 - **Solaris** · [paper](https://arxiv.org/pdf/2602.22208) [code](https://github.com/solaris-wm/solaris)
 - **Infinite-World** · [[Paper]](https://arxiv.org/abs/2602.02393) [[Code]](https://github.com/MeiGen-AI/Infinite-World)
+- **DreamX-World** · [[Paper]](#) [[Code]](https://github.com/AMAP-ML/DreamX-World)
+- **Hunyuan-worldplay2** · [[Paper]](https://arxiv.org/abs/2604.14268) [[Code]](https://github.com/Tencent-Hunyuan/HY-World-2.0)
+- **MultiWorld** · [[Paper]](https://arxiv.org/abs/2604.18564) [[Code]](https://github.com/CIntellifusion/MultiWorld)
+- **Agora-1** · [[Paper]](#) [[Project]](https://agora.odyssey.ml/)
+- **GammaWorld** · [[Paper]](https://arxiv.org/abs/2605.28816) [[Code]](https://github.com/nv-tlabs/Gamma-World)
+- **WorldPilot** · [[Paper]](https://arxiv.org/abs/2606.12403) [[Code]](https://github.com/ZefuLin/WorldPilot)
+- **Warp-as-History** · [[Paper]](https://arxiv.org/abs/2605.15182) [[Code]](https://github.com/yyfz/Warp-as-History)
 </details>
 
 #### (long-term) video generation
@@ -216,6 +224,8 @@
 - **Vchain** · [[Paper]](https://arxiv.org/pdf/2510.05094) [[Code]](https://github.com/Eyeline-Labs/Vchain)
 - **Videocanvas** · [[Paper]](https://arxiv.org/pdf/2510.08555) [[Code]](https://github.com/KlingTeam/VideoCanvas)
 - **SANA-video** · [[Paper]](https://arxiv.org/pdf/2509.24695) [[Code]](https://github.com/NVlabs/Sana)
+- **SANA** · [[Paper]](https://arxiv.org/abs/2605.15178) [[Code]](https://github.com/NVlabs/Sana) sana-wm is coming
+- **motionbricks** · [[Paper]](https://arxiv.org/pdf/2604.24833) [[Code]](#) human actions generation
 - **Hunyuan-Video** · [[Paper]](#) [[Code]](https://github.com/Tencent-Hunyuan/HunyuanVideo)
 - **CogVideoX** · [[Paper]](#) [[Code]](https://github.com/zai-org/CogVideo)
 - **longcat-video** · [[Paper]](#) [[Code]](https://github.com/meituan-longcat/LongCat-Video)
@@ -348,6 +358,7 @@
 
 - **Ai2thor** · [[Paper]](https://arxiv.org/pdf/1712.05474) [[Code]](https://github.com/allenai/ai2thor)
 - **SimWorld** · [[Paper]](https://arxiv.org/pdf/2512.01078) [[Code]](https://github.com/SimWorld-AI/SimWorld)
+- **Roblox** · [[Paper]](https://about.roblox.com/newsroom/2026/04/roblox-reality-hybrid-architecture-democratizing-photorealistic-multiplayer-gaming) [[Code]](#)
 - **Genesis** · [[Paper]](#) [[Code]](https://github.com/Genesis-Embodied-AI/Genesis)
 - **Latticeworld** · [[Paper]](https://arxiv.org/pdf/2509.05263) [[Code]](#)
 - **Worldlab** · [[Paper]](#) [[Code]](https://github.com/Twynzen/worldlab.git)
@@ -428,6 +439,11 @@
 - **LPWM** · [[Paper]](https://arxiv.org/pdf/2603.04553) [[Code]](https://github.com/taldatech/lpwm)
 - **ACoT-VLA** · [[Paper]](https://arxiv.org/pdf/2601.11404) [[Code]](https://github.com/AgibotTech/ACoT-VLA)
 - **GigaWorld-Policy** · [[Paper]](https://arxiv.org/pdf/2603.17240) [[Code]](https://github.com/GigaAI-research/GigaWorld-Policy)
+- **LIBERO-Para** · [[Paper]](https://arxiv.org/abs/2603.28301) [[Code]](#)
+- **every-embodied** · [[Paper]](#) [[Code]](https://github.com/datawhalechina/every-embodied) excellent learning framework for VLA
+- **Hunyuan-embodied** · [[Paper]](https://arxiv.org/abs/2604.07430) [[Code]](https://github.com/Tencent-Hunyuan/HY-Embodied)
+- **beingbeyond (Being-H)** · [[Paper]](https://arxiv.org/abs/2601.12993) [[Code]](https://github.com/BeingBeyond/Being-H)
+- **LaST-R1** · [[Paper]](https://arxiv.org/abs/2604.28192) [[Code]](https://github.com/CHEN-H01/LaST-R1)
 </details>
 
 <details>
@@ -518,6 +534,8 @@
 
 - **WoWbench** · [[Paper]](https://arxiv.org/pdf/2509.22642) [[Code]](https://github.com/wow-world-model/wow-world-model)
 - **Envision** · [[Paper]](https://arxiv.org/pdf/2512.01816) [[Code]](https://github.com/opendatalab-raiser/Envision)
+- **WorldOlympiad** · [[Paper]](https://arxiv.org/pdf/2606.11129) [[Code]](https://github.com/alibaba-damo-academy/WorldOlympiad)
+- **Wbench** · [[Paper]](https://arxiv.org/abs/2605.25874) [[Code]](https://github.com/meituan-longcat/WBench) benchmark for multi-turn interactive video generation evaluation
 </details>
 
 <details>
@@ -562,6 +580,7 @@
 - **MMGR** · [[Paper]](https://arxiv.org/pdf/2512.14691) [[Code]](https://github.com/Zefan-Cai/MMGR)
 - **Phyx** · [[Paper]](https://arxiv.org/pdf/2505.15929) [[Code]](https://github.com/killthefullmoon/PhyX)
 - **Seephys** · [[Paper]](https://arxiv.org/pdf/2505.19099) [[Code]](https://github.com/AI4Phys/SeePhys)
+- **SpatialWorld** · [[Paper]](https://arxiv.org/pdf/2606.09669) [[Code]](https://github.com/Hongcheng-Gao/SpatialWorld)
 </details>
 
 #### World Knowledge Model
@@ -589,6 +608,9 @@
 <summary><strong> Detection </strong></summary>
 
 - **DINO-WM** · [[Paper]](https://arxiv.org/pdf/2411.04983) [[Code]](https://github.com/gaoyuezhou/dino_wm)
+- **wildDet3D** · [[Paper]](https://arxiv.org/abs/2604.08626) [[Code]](https://github.com/allenai/WildDet3D) well exhibition, important work
+- **CFC** · [[Paper]](#) [[Project]](https://frank-zy-dou.github.io/projects/CFC/)
+- **image-blaster** · [[Paper]](#) [[Code]](https://github.com/neilsonnn/image-blaster) interactive foreground in 3D scenes
 </details>
 
 #### World Model Training
@@ -597,4 +619,23 @@
 <summary><strong> world model training methods details </strong></summary>
 
 - **RLVR-World** · [[Paper]](https://arxiv.org/pdf/2505.13934) [[Code]](https://github.com/thuml/RLVR-World)
+</details>
+
+#### World Model System
+
+<details>
+<summary><strong> world model training system </strong></summary>
+
+- **minWM** · [[Paper]](https://arxiv.org/pdf/2605.30263) [[Code]](https://github.com/shengshu-ai/minWM)
+- **nano-world-model** · [[Paper]](#) [[Code]](https://github.com/simchowitzlabpublic/nano-world-model/tree/main) a great world model training framework
+</details>
+
+#### Other
+
+<details>
+<summary><strong> misc </strong></summary>
+
+- **HappyOyster** · [[Project]](https://www.happyoyster.cn)
+- **cosmos3** · [[Paper]](https://arxiv.org/abs/2606.02800) [[Code]](https://github.com/NVIDIA/cosmos)
+- **fastwam** · [[Paper]](https://arxiv.org/abs/2603.16666) [[Code]](https://github.com/yuantianyuan01/FastWAM) important for evaluation
 </details>
