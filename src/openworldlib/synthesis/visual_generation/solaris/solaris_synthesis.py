@@ -31,6 +31,9 @@ class SolarisSynthesis(BaseSynthesis):
     ) -> "SolarisSynthesis":
         return cls(pretrained_model_dir=pretrained_model_path, dataset_dir=dataset_dir, python_bin=python_bin)
 
+    def api_init(self, api_key, endpoint):
+        raise NotImplementedError("Solaris is a local checkpoint pipeline and does not expose an API backend.")
+
     def predict(
         self,
         output_dir: str,

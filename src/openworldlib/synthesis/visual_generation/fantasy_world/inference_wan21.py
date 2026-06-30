@@ -14,11 +14,10 @@ import numpy as np
 import torch
 
 from FantasyWorld.fusion.model_wan21 import FantasyWorldFusionModel
-from FantasyWorld.diffsynth_wan21.data.dataset_re10k import RealEstate10KPoseProcessor
-from FantasyWorld.vggt.utils.pose_enc import extri_intri_to_pose_encoding
+from openworldlib.base_models.diffusion_model.diffsynth.data.dataset_re10k import RealEstate10KPoseProcessor
+from openworldlib.base_models.three_dimensions.point_clouds.vggt.vggt.utils.pose_enc import extri_intri_to_pose_encoding
 from utils import cameras_json_to_camera_list, get_pointclouds, save_colored_pointcloud_ply, normalize_scene, get_intrinsic_matrix, batch_depth_to_world, save_video_imageio
 
-sys.path.insert(0, "thirdparty/MoGe")
 from moge.model.v2 import MoGeModel
 
 def str2bool(v):
@@ -123,7 +122,7 @@ def parse_args():
     parser.add_argument(
         "--frames",
         type=int,
-        default=81,
+        default=17,
         help="Number of frames to generate"
     )
     parser.add_argument(

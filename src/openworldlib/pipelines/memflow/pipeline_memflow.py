@@ -1,16 +1,22 @@
 from __future__ import annotations
 
 import sys
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from ...operators.memflow_operator import MemFlowOperator
 from ...synthesis.visual_generation.memflow.memflow_synthesis import MemFlowSynthesis
 
 
 class MemFlowPipeline:
-    def __init__(self, operators: MemFlowOperator, synthesis_model: MemFlowSynthesis):
+    def __init__(
+        self,
+        operators: Optional[MemFlowOperator] = None,
+        synthesis_model: Optional[MemFlowSynthesis] = None,
+        device: str = "cuda",
+    ) -> None:
         self.operators = operators
         self.synthesis_model = synthesis_model
+        self.device = device
 
     @classmethod
     def from_pretrained(
@@ -18,6 +24,7 @@ class MemFlowPipeline:
         model_path: str,
         wan_model_path: str,
         python_bin: str = sys.executable,
+        device: str = "cuda",
         **kwargs,
     ) -> "MemFlowPipeline":
         return cls(
@@ -27,7 +34,16 @@ class MemFlowPipeline:
                 wan_model_path=wan_model_path,
                 python_bin=python_bin,
             ),
+            device=device,
         )
+
+    def process(self, prompt: str) -> Dict[str, Any]:
+        if self.operators is None:
+            raise ValueError("operators must be provided")
+        self.operators.get_interaction(prompt)
+        interaction = self.operators.process_interaction()
+        self.operators.delete_last_interaction()
+        return interaction
 
     def __call__(
         self,
@@ -39,9 +55,11 @@ class MemFlowPipeline:
         timeout: Optional[int] = None,
         **kwargs,
     ):
-        prompt = self.operators.process_interaction(prompt)
+        if self.synthesis_model is None:
+            raise ValueError("synthesis_model must be provided")
+        processed = self.process(prompt=prompt)
         return self.synthesis_model.predict(
-            prompt=prompt,
+            prompt=processed["prompt"],
             output_dir=output_dir,
             num_output_frames=num_output_frames,
             num_samples=num_samples,

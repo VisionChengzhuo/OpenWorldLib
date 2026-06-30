@@ -133,6 +133,7 @@ def load_cosmos3_pipeline(model_path: Union[str, Dict], device: str):
     return Cosmos3Pipeline.from_pretrained(
         model_path=_resolve_path(model_path, "pretrained_model_path"),
         torch_dtype=model_path.get("torch_dtype", "bfloat16") if isinstance(model_path, dict) else "bfloat16",
+        device=device,
     )
 
 
@@ -144,6 +145,7 @@ def load_gamma_world_pipeline(model_path: Union[str, Dict], device: str):
         vae=model_path.get("vae") if isinstance(model_path, dict) else None,
         text_encoder=model_path.get("text_encoder") if isinstance(model_path, dict) else None,
         python_bin=model_path.get("python_bin", "python") if isinstance(model_path, dict) else "python",
+        device=device,
     )
 
 
@@ -153,6 +155,7 @@ def load_hunyuan_worldplay2_pipeline(model_path: Union[str, Dict], device: str):
         model_path=_resolve_path(model_path, "pretrained_model_path"),
         subfolder=model_path.get("subfolder", "HY-WorldMirror-2.0") if isinstance(model_path, dict) else "HY-WorldMirror-2.0",
         python_bin=model_path.get("python_bin", "python") if isinstance(model_path, dict) else "python",
+        device=device,
     )
 
 
@@ -162,6 +165,7 @@ def load_solaris_pipeline(model_path: Union[str, Dict], device: str):
         model_path=_resolve_path(model_path, "pretrained_model_path"),
         dataset_dir=_resolve_path(model_path, "dataset_dir"),
         python_bin=model_path.get("python_bin", "python") if isinstance(model_path, dict) else "python",
+        device=device,
     )
 
 
@@ -174,6 +178,7 @@ def load_ctrl_world_pipeline(model_path: Union[str, Dict], device: str):
         dataset_root_path=model_path.get("dataset_root_path") if isinstance(model_path, dict) else None,
         dataset_meta_info_path=model_path.get("dataset_meta_info_path") if isinstance(model_path, dict) else None,
         python_bin=model_path.get("python_bin", "python") if isinstance(model_path, dict) else "python",
+        device=device,
     )
 
 
@@ -183,6 +188,7 @@ def load_fantasy_world_pipeline(model_path: Union[str, Dict], device: str):
         model_path=_resolve_path(model_path, "pretrained_model_path"),
         wan_ckpt_path=_resolve_path(model_path, "wan_ckpt_path"),
         python_bin=model_path.get("python_bin", "python") if isinstance(model_path, dict) else "python",
+        device=device,
     )
 
 
@@ -192,6 +198,7 @@ def load_memflow_pipeline(model_path: Union[str, Dict], device: str):
         model_path=_resolve_path(model_path, "pretrained_model_path"),
         wan_model_path=_resolve_path(model_path, "wan_model_path"),
         python_bin=model_path.get("python_bin", "python") if isinstance(model_path, dict) else "python",
+        device=device,
     )
 
 

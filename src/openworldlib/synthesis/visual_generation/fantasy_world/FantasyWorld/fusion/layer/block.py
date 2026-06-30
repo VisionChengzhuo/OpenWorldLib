@@ -6,20 +6,88 @@ from torch import Tensor
 import warnings
 from typing import Callable, Literal, Tuple, Optional
 import torch.nn.functional as F
-from ...diffsynth_wan21.models.wan_video_dit import DiTBlock
-from ...vggt.layers.block import Block
+from openworldlib.base_models.diffusion_model.diffsynth.models.wan_video_dit import DiTBlock
+from openworldlib.base_models.three_dimensions.point_clouds.vggt.vggt.layers.block import Block as VGGTBlock
 import math
 from einops import rearrange
-from ...diffsynth_wan21.models.wan_video_dit import rope_apply
+from openworldlib.base_models.diffusion_model.diffsynth.models.wan_video_dit import rope_apply
 
 from torch.utils.checkpoint import checkpoint
+
+
+class PartialVGGTBlock(nn.Module):
+    """Adapter that adds FantasyWorld's partial-forward hooks to the shared VGGT block."""
+
+    def __init__(self, block: VGGTBlock) -> None:
+        super().__init__()
+        self.norm1 = block.norm1
+        self.attn = block.attn
+        dim = self.norm1.normalized_shape[0]
+        self.modulation = nn.Parameter(torch.randn(1, 6, dim) / dim**0.5)
+        self.ls1 = block.ls1
+        self.drop_path1 = block.drop_path1
+        self.norm2 = block.norm2
+        self.mlp = block.mlp
+        self.ls2 = block.ls2
+        self.drop_path2 = block.drop_path2
+        self.sample_drop_ratio = block.sample_drop_ratio
+
+    def attn_residual_func(self, x: Tensor, pos=None, e=None) -> Tensor:
+        if e is None:
+            return self.ls1(self.attn(self.norm1(x), pos=pos))
+        return self.ls1(self.attn(self.norm1(x) * (1 + e[1]) + e[0], pos=pos))
+
+    def ffn_residual_func(self, x: Tensor, e=None) -> Tensor:
+        if e is None:
+            return self.ls2(self.mlp(self.norm2(x)))
+        return self.ls2(self.mlp(self.norm2(x)) * (1 + e[4]) + e[3]) * e[5]
+
+    def forward(
+        self,
+        x: Tensor,
+        pos=None,
+        e0=None,
+        return_partial: bool = False,
+        run_remaining: bool = False,
+        modifiers: Tuple[Tensor, ...] | None = None,
+    ) -> Tensor | tuple[Tensor, tuple]:
+        if run_remaining:
+            if modifiers is None:
+                raise ValueError("run_remaining requires modifiers")
+            return x + self.ffn_residual_func(x, e=modifiers)
+
+        if e0 is not None:
+            batch_size = e0.shape[0]
+            if batch_size != x.shape[0]:
+                e0 = e0.unsqueeze(1).repeat(1, x.shape[0] // batch_size, 1, 1)
+                e0 = e0.reshape(x.shape[0], 6, -1)
+
+        if e0 is not None:
+            e_mod = (self.modulation + e0).chunk(6, dim=1)
+        else:
+            e_mod = None
+
+        x = x + self.attn_residual_func(x, pos=pos, e=e_mod)
+        if return_partial:
+            return x, e_mod
+
+        if modifiers is not None:
+            e_mod = modifiers
+
+        return x + self.ffn_residual_func(x, e=e_mod)
+
+    def forward_partial(self, *args, **kwargs):
+        return self.forward(*args, **kwargs, return_partial=True)
+
+    def forward_remaining(self, x: Tensor, e=None):
+        return self.forward(x, run_remaining=True, modifiers=e)
 
 
 class IRGBlock(nn.Module):
     def __init__(
         self,
         x_dit_block: DiTBlock,
-        x_agg_block: Block,
+        x_agg_block: PartialVGGTBlock,
         m1_dim, m2_dim, hidden_size, num_heads,
         drop_path=0.0,
         enable_layernorm_kernel=False,

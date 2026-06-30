@@ -49,6 +49,9 @@ class GammaWorldSynthesis(BaseSynthesis):
             python_bin=python_bin,
         )
 
+    def api_init(self, api_key, endpoint):
+        raise NotImplementedError("Gamma-World is a local checkpoint pipeline and does not expose an API backend.")
+
     def predict(
         self,
         output_dir: str,
@@ -66,7 +69,8 @@ class GammaWorldSynthesis(BaseSynthesis):
         timeout: Optional[int] = None,
         **kwargs,
     ) -> Dict[str, object]:
-        eval_root = ensure_path(eval_dir or str(self.runtime_dir / "data"), "Gamma-World eval data", expect_file=False)
+        default_eval_dir = self.runtime_dir.parents[4] / "data" / "test_case" / "gamma_world"
+        eval_root = ensure_path(eval_dir or str(default_eval_dir), "Gamma-World eval data", expect_file=False)
         output_root = Path(output_dir).expanduser().resolve()
         output_root.mkdir(parents=True, exist_ok=True)
 

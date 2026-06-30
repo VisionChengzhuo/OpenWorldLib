@@ -30,6 +30,9 @@ class FantasyWorldSynthesis(BaseSynthesis):
             python_bin=python_bin,
         )
 
+    def api_init(self, api_key, endpoint):
+        raise NotImplementedError("FantasyWorld is a local checkpoint pipeline and does not expose an API backend.")
+
     def predict(
         self,
         image_path: str,
@@ -37,6 +40,7 @@ class FantasyWorldSynthesis(BaseSynthesis):
         prompt: str,
         output_dir: str,
         sample_steps: int = 50,
+        frames: int = 17,
         using_scale: bool = True,
         cuda_visible_devices: str = "0",
         moge_ckpt: Optional[str] = None,
@@ -62,9 +66,20 @@ class FantasyWorldSynthesis(BaseSynthesis):
             str(output_root),
             "--sample_steps",
             str(int(sample_steps)),
+            "--frames",
+            str(int(frames)),
             "--using_scale",
             "True" if using_scale else "False",
         ]
+        repo_src = self.runtime_dir.parents[3]
+        utils3d_parent = (
+            repo_src
+            / "openworldlib"
+            / "base_models"
+            / "three_dimensions"
+            / "general_3d"
+            / "eastern_journalist"
+        )
         completed = run_method_command(
             command,
             cwd=self.runtime_dir,
@@ -72,7 +87,7 @@ class FantasyWorldSynthesis(BaseSynthesis):
                 "CUDA_VISIBLE_DEVICES": cuda_visible_devices,
                 "FANTASY_WORLD_MOGE_CKPT": moge_ckpt or kwargs.get("moge_ckpt") or "Ruicheng/moge-2-vitl-normal",
             },
-            python_paths=[self.runtime_dir, self.runtime_dir / "thirdparty" / "MoGe"],
+            python_paths=[repo_src, self.runtime_dir, utils3d_parent],
             timeout=timeout,
         )
         video_path = output_root / "video.mp4"

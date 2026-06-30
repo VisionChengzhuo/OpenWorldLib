@@ -1,7 +1,7 @@
 from pathlib import Path
 import struct
-from FantasyWorld.vggt.utils.pose_enc import pose_encoding_to_extri_intri
-from FantasyWorld.vggt.utils.geometry import closed_form_inverse_se3
+from openworldlib.base_models.three_dimensions.point_clouds.vggt.vggt.utils.pose_enc import pose_encoding_to_extri_intri
+from openworldlib.base_models.three_dimensions.point_clouds.vggt.vggt.utils.geometry import closed_form_inverse_se3
 import math
 import os
 
@@ -950,7 +950,18 @@ def cameras_json_to_camera_list(data, image_size=None, K=None):
         list: List of Camera objects
     """
     fx, fy, cx, cy = _infer_intrinsics(data, image_size=image_size, K=K)
-    mats = data["cameras_interp"]
+    mats = data.get("cameras_interp")
+    if mats is None:
+        trajectory = data.get("trajectory", {})
+        num_frames = int(trajectory.get("num_frames", data.get("num_frames", 17)))
+        step = float(trajectory.get("step", 0.02))
+        axis = trajectory.get("axis", "z")
+        axis_index = {"x": 0, "y": 1, "z": 2}[axis]
+        mats = []
+        for idx in range(num_frames):
+            c2w = np.eye(4, dtype=np.float64)
+            c2w[axis_index, 3] = step * idx
+            mats.append(c2w.tolist())
 
     cam_list = []
     for idx, c2w in enumerate(mats):

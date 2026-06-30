@@ -12,7 +12,7 @@ def main():
         python_bin=os.environ.get("HY_WORLD2_PYTHON", "python"),
     )
     result = pipe(
-        input_path=os.environ.get("HY_WORLD2_INPUT", str(repo_root / "data" / "test_case" / "hunyuan_worldplay2" / "teaser.png")),
+        input_path=os.environ.get("HY_WORLD2_INPUT", str(repo_root / "data" / "test_case" / "test_image_seq_case1" / "image_0001.jpg")),
         output_dir=os.environ.get("HY_WORLD2_OUTPUT", "./output/hunyuan_worldplay2"),
         target_size=int(os.environ.get("HY_WORLD2_TARGET_SIZE", "952")),
         video_max_frames=int(os.environ.get("HY_WORLD2_VIDEO_MAX_FRAMES", "32")),

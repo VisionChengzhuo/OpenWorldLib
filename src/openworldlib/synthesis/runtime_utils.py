@@ -3,14 +3,14 @@ from __future__ import annotations
 import os
 import subprocess
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence
+from typing import Dict, Iterable, List, Optional, Sequence, Union
 
 
 class MethodRuntimeError(RuntimeError):
     pass
 
 
-def ensure_path(path: str | os.PathLike, name: str, expect_file: Optional[bool] = None) -> Path:
+def ensure_path(path: Union[str, os.PathLike], name: str, expect_file: Optional[bool] = None) -> Path:
     resolved = Path(path).expanduser().resolve()
     if expect_file is True and not resolved.is_file():
         raise FileNotFoundError(f"{name} file not found: {resolved}")
@@ -27,9 +27,9 @@ def package_dir(anchor_file: str, *parts: str) -> Path:
 
 def run_method_command(
     command: Sequence[str],
-    cwd: str | os.PathLike,
+    cwd: Union[str, os.PathLike],
     env: Optional[Dict[str, str]] = None,
-    python_paths: Optional[Iterable[str | os.PathLike]] = None,
+    python_paths: Optional[Iterable[Union[str, os.PathLike]]] = None,
     timeout: Optional[int] = None,
 ) -> subprocess.CompletedProcess:
     cwd_path = Path(cwd).resolve()
@@ -62,7 +62,7 @@ def run_method_command(
     return completed
 
 
-def require_outputs(paths: Iterable[str | os.PathLike]) -> List[str]:
+def require_outputs(paths: Iterable[Union[str, os.PathLike]]) -> List[str]:
     resolved = []
     missing = []
     for path in paths:

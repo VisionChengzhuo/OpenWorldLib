@@ -31,6 +31,9 @@ class HunyuanWorldPlay2Synthesis(BaseSynthesis):
     ) -> "HunyuanWorldPlay2Synthesis":
         return cls(model_path=pretrained_model_path, subfolder=subfolder, python_bin=python_bin)
 
+    def api_init(self, api_key, endpoint):
+        raise NotImplementedError("HY-World-2.0 is a local checkpoint pipeline and does not expose an API backend.")
+
     def predict(
         self,
         input_path: str,

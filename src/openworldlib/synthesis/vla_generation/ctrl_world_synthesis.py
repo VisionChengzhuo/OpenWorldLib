@@ -55,6 +55,9 @@ class CtrlWorldSynthesis(BaseSynthesis):
             python_bin=python_bin,
         )
 
+    def api_init(self, api_key, endpoint):
+        raise NotImplementedError("Ctrl-World is a local checkpoint pipeline and does not expose an API backend.")
+
     def predict(
         self,
         keyboard: str = "ddcu",

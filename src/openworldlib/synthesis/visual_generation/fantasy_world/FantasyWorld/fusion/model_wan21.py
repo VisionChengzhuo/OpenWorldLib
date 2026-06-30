@@ -9,15 +9,15 @@ import torch.nn as nn
 from huggingface_hub import PyTorchModelHubMixin  # used for model hub
 from typing import Optional
 
-from ..fusion.layer.block import IRGBlock
-from ..diffsynth_wan21 import WanVideoPipeline, ModelManager
-from ..diffsynth_wan21.models.camera_control import CameraConditionModel
-from ..diffsynth_wan21.models.wan_video_dit import (
+from ..fusion.layer.block import IRGBlock, PartialVGGTBlock
+from openworldlib.base_models.diffusion_model.diffsynth import WanVideoPipeline, ModelManager
+from openworldlib.base_models.diffusion_model.diffsynth.models.camera_control import CameraConditionModel
+from openworldlib.base_models.diffusion_model.diffsynth.models.wan_video_dit import (
     build_freqs_3d_with_extra_cis,
     precompute_freqs_cis_3d,
     sinusoidal_embedding_1d,
 )
-from ..vggt.models.vggt import VGGT
+from openworldlib.base_models.three_dimensions.point_clouds.vggt.vggt.models.vggt import VGGT
 
 
 class FantasyWorldFusionModel(nn.Module, PyTorchModelHubMixin):
@@ -70,7 +70,7 @@ class FantasyWorldFusionModel(nn.Module, PyTorchModelHubMixin):
             src_dit_blk = self.pipe.dit.blocks[idx + self.start_index]
             src_agg_blk = self.vggt.aggregator.global_blocks[idx]
             dit_blk_copy = copy.deepcopy(src_dit_blk)
-            agg_blk_copy = copy.deepcopy(src_agg_blk)
+            agg_blk_copy = PartialVGGTBlock(copy.deepcopy(src_agg_blk))
             self.pipe.dit.blocks[idx + self.start_index] = nn.Identity()
             self.vggt.aggregator.global_blocks[idx] = nn.Identity()
             irg_blocks.append(

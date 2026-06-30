@@ -32,6 +32,9 @@ class MemFlowSynthesis(BaseSynthesis):
     ) -> "MemFlowSynthesis":
         return cls(checkpoint_dir=pretrained_model_path, wan_model_path=wan_model_path, python_bin=python_bin)
 
+    def api_init(self, api_key, endpoint):
+        raise NotImplementedError("MemFlow is a local checkpoint pipeline and does not expose an API backend.")
+
     def predict(
         self,
         prompt: str,
