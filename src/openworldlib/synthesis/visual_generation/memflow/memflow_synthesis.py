@@ -74,7 +74,7 @@ class MemFlowSynthesis(BaseSynthesis):
                 [self.python_bin, str(self.runtime_dir / "inference.py"), "--config_path", str(config_path)],
                 cwd=tmp_root,
                 env={"CUDA_VISIBLE_DEVICES": cuda_visible_devices},
-                python_paths=[self.runtime_dir],
+                python_paths=[self.runtime_dir.parents[3], self.runtime_dir],
                 timeout=timeout,
             )
 

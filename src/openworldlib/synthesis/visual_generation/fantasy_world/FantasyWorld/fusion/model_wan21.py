@@ -17,7 +17,7 @@ from openworldlib.base_models.diffusion_model.diffsynth.models.wan_video_dit imp
     precompute_freqs_cis_3d,
     sinusoidal_embedding_1d,
 )
-from openworldlib.base_models.three_dimensions.point_clouds.vggt.vggt.models.vggt import VGGT
+from openworldlib.base_models.three_dimensions.point_clouds.vggt.fantasy_world_vggt.models.vggt import VGGT
 
 
 class FantasyWorldFusionModel(nn.Module, PyTorchModelHubMixin):
@@ -143,7 +143,7 @@ class FantasyWorldFusionModel(nn.Module, PyTorchModelHubMixin):
 
         freqs_bi_agg = build_freqs_3d_with_extra_cis(self.freqs_bicross,
                                                      f, h, w,
-                                                     n_extra=5,
+                                                     n_extra=5 * f,
                                                      device=x.device)
 
         def create_custom_forward(module):

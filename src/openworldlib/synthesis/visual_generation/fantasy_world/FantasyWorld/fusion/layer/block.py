@@ -6,7 +6,7 @@ from torch import Tensor
 import warnings
 from typing import Callable, Literal, Tuple, Optional
 import torch.nn.functional as F
-from openworldlib.base_models.diffusion_model.diffsynth.models.wan_video_dit import DiTBlock
+from openworldlib.base_models.diffusion_model.diffsynth.models.wan_video_dit import DiTBlock, modulate
 from openworldlib.base_models.three_dimensions.point_clouds.vggt.vggt.layers.block import Block as VGGTBlock
 import math
 from einops import rearrange
@@ -108,6 +108,33 @@ class IRGBlock(nn.Module):
             bica_mode=bica_mode,
         )
 
+    def _dit_forward_partial(self, x, context, t_mod, freqs, **kwargs):
+        if hasattr(self.x_dit, "forward_partial"):
+            return self.x_dit(
+                x, context, t_mod, freqs,
+                return_partial=True, **kwargs
+            )
+
+        shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = (
+            self.x_dit.modulation.to(dtype=t_mod.dtype, device=t_mod.device) + t_mod
+        ).chunk(6, dim=1)
+        input_x = modulate(self.x_dit.norm1(x), shift_msa, scale_msa)
+        x = self.x_dit.gate(x, gate_msa, self.x_dit.self_attn(input_x, freqs))
+        x = x + self.x_dit.cross_attn(self.x_dit.norm3(x), context, **kwargs)
+        return x, (shift_mlp, scale_mlp, gate_mlp)
+
+    def _dit_forward_remaining(self, x, context, t_mod, freqs, modifiers, **kwargs):
+        if hasattr(self.x_dit, "forward_remaining"):
+            return self.x_dit(
+                x, context, t_mod, freqs,
+                run_remaining=True,
+                modifiers=modifiers, **kwargs,
+            )
+
+        shift_mlp, scale_mlp, gate_mlp = modifiers
+        input_x = modulate(self.x_dit.norm2(x), shift_mlp, scale_mlp)
+        return self.x_dit.gate(x, gate_mlp, self.x_dit.ffn(input_x))
+
     def _forward_impl(
         self,
         x_dit: torch.Tensor,
@@ -124,9 +151,8 @@ class IRGBlock(nn.Module):
     ):
 
         _, P, D = x_agg.shape
-        x_dit_p, mod_dit = self.x_dit(
-            x_dit, context, t_mod, freqs,
-            return_partial=True, **kwargs
+        x_dit_p, mod_dit = self._dit_forward_partial(
+            x_dit, context, t_mod, freqs, **kwargs
         )
         pos = rearrange(pos, '(b s) p d -> b (s p) d', b=x_dit_p.size(0))
         x_agg = rearrange(x_agg, '(b s) p d -> b (s p) d', b=x_dit_p.size(0))
@@ -142,10 +168,8 @@ class IRGBlock(nn.Module):
             x_dit_f, x_agg_f = self.bicross_attention(
                 [x_dit_p, x_agg_p], freqs=freqs, freqs_dit=freqs_dit, freqs_agg=freqs_agg,
             )
-        x_dit_out = self.x_dit(
-            x_dit_f, context, t_mod, freqs,
-            run_remaining=True,
-            modifiers=mod_dit, **kwargs,
+        x_dit_out = self._dit_forward_remaining(
+            x_dit_f, context, t_mod, freqs, mod_dit, **kwargs
         )
 
         x_agg_out = self.x_agg(

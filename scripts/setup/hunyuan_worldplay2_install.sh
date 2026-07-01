@@ -3,6 +3,10 @@ set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 METHOD_SRC="$PROJECT_ROOT/src/openworldlib/synthesis/visual_generation/hunyuan_world/hunyuan_worldplay2"
+SUBMODULES_DIR="$PROJECT_ROOT/submodules"
+GSPLAT_DIR="$SUBMODULES_DIR/hunyuan-worldplay2-gsplat-maskgaussian"
+NAVMESH_DIR="$SUBMODULES_DIR/hunyuan-worldplay2-navmesh"
+RECAST_DIR="${RECAST_DIR:-$SUBMODULES_DIR/hunyuan-worldplay2-recastnavigation}"
 ENV_PATH=${ENV_PATH:-"$PROJECT_ROOT/.conda-envs/hunyuan-worldplay2"}
 PKG_DIR=${CONDA_PKGS_DIRS:-"$PROJECT_ROOT/.conda-pkgs/hunyuan-worldplay2"}
 
@@ -56,15 +60,22 @@ text = text.replace(
 )
 path.write_text(text)
 PY
-if [ -d "$METHOD_SRC/hyworld2/worldgen/third_party/gsplat_maskgaussian" ]; then
-  GLM_DIR="$METHOD_SRC/hyworld2/worldgen/third_party/gsplat_maskgaussian/gsplat/cuda/csrc/third_party/glm"
+if [ -d "$GSPLAT_DIR" ]; then
+  GLM_DIR="$GSPLAT_DIR/gsplat/cuda/csrc/third_party/glm"
   if [ ! -f "$GLM_DIR/glm/gtc/type_ptr.hpp" ]; then
     mkdir -p "$(dirname "$GLM_DIR")"
     rm -rf "$GLM_DIR"
     git clone --depth 1 https://github.com/g-truc/glm.git "$GLM_DIR"
   fi
-  conda run -p "$ENV_PATH" env MAX_JOBS="${MAX_JOBS:-4}" TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST:-9.0}" python -m pip install "$METHOD_SRC/hyworld2/worldgen/third_party/gsplat_maskgaussian" --no-build-isolation --no-deps
+  conda run -p "$ENV_PATH" env MAX_JOBS="${MAX_JOBS:-4}" TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST:-9.0}" python -m pip install "$GSPLAT_DIR" --no-build-isolation --no-deps
 else
   conda run -p "$ENV_PATH" env MAX_JOBS="${MAX_JOBS:-4}" TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST:-9.0}" python -m pip install git+https://github.com/nerfstudio-project/gsplat.git --no-build-isolation --no-deps
+fi
+if [ -d "$NAVMESH_DIR" ]; then
+  if [ ! -f "$RECAST_DIR/Recast/Include/Recast.h" ]; then
+    rm -rf "$RECAST_DIR"
+    git clone --depth 1 --recurse-submodules https://github.com/recastnavigation/recastnavigation.git "$RECAST_DIR"
+  fi
+  conda run -p "$ENV_PATH" env RECAST_PATH="$RECAST_DIR" python -m pip install "$NAVMESH_DIR" --no-build-isolation --no-deps
 fi
 conda run -p "$ENV_PATH" python -m pip install -e "$PROJECT_ROOT" --no-deps

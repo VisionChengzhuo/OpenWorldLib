@@ -51,7 +51,7 @@ Please follow the root installation guide in [HY-World 2.0 Get Started](../../RE
 <details>
 <summary><b>Installation Notes</b></summary>
 
-- `third_party/gsplat_maskgaussian` is our modified version of [gsplat](https://github.com/nerfstudio-project/gsplat) that integrates MaskGaussian for adaptive probabilistic Gaussian pruning during 3DGS training. `third_party/navmesh` needs [recastnavigation](https://github.com/recastnavigation/recastnavigation) (cloned via `--recursive`) for NavMesh-based path planning. Both must be compiled from source.
+- `submodules/hunyuan-worldplay2-gsplat-maskgaussian` is our modified version of [gsplat](https://github.com/nerfstudio-project/gsplat) that integrates MaskGaussian for adaptive probabilistic Gaussian pruning during 3DGS training. `submodules/hunyuan-worldplay2-navmesh` needs [recastnavigation](https://github.com/recastnavigation/recastnavigation) for NavMesh-based path planning. The OpenWorldLib setup script downloads external GLM/Recast dependencies and compiles both packages from source.
 
 </details>
 

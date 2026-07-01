@@ -25,7 +25,7 @@ conda run -p "$ENV_PATH" python -m pip install -r "$METHOD_SRC/requirements.txt"
 conda run -p "$ENV_PATH" python -m pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu124
 
 echo "=== [2/3] Installing FantasyWorld utility packages ==="
-conda run -p "$ENV_PATH" python -m pip install "git+https://github.com/microsoft/MoGe.git" --no-deps
+# MoGe is provided in src/openworldlib/base_models/three_dimensions/depth/moge.
 conda run -p "$ENV_PATH" python -m pip install "numpy<2,>=1.23.5"
 
 echo "=== [3/3] Installing OpenWorldLib ==="

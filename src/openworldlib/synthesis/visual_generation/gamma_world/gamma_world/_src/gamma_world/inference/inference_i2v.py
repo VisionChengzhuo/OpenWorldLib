@@ -629,7 +629,7 @@ def parse_arguments() -> argparse.Namespace:
         "--eval_dir",
         type=str,
         default=None,
-        help="Directory of prepared eval samples. Each subdirectory has first_frame.png, prompt.txt, "
+        help="Directory of prepared eval samples. Each subdirectory has first_frame.png or first_frame_path.txt, prompt.txt, "
              "an optional gt_combined.mp4, and per-player action JSONs: either action_left/right.json "
              "(--n_players=2) or action_<i>.json for i in [0, n_players) (--n_players>=2). "
              "Model is loaded once and all samples are processed sequentially.",
@@ -873,7 +873,7 @@ if __name__ == "__main__":
             assert os.path.isdir(args.eval_dir), f"Eval dir not found: {args.eval_dir}"
             sample_dirs = []
             for root, _, files in os.walk(args.eval_dir):
-                if "first_frame.png" in files:
+                if "first_frame.png" in files or "first_frame_path.txt" in files:
                     sample_dirs.append(os.path.relpath(root, args.eval_dir))
             sample_dirs = sorted(sample_dirs)
             if args.max_eval_samples is not None:
@@ -901,11 +901,18 @@ if __name__ == "__main__":
             for sample_idx, sample_name in enumerate(sample_dirs):
                 sample_path = os.path.join(args.eval_dir, sample_name)
                 image_path = os.path.join(sample_path, "first_frame.png")
+                pointer_path = os.path.join(sample_path, "first_frame_path.txt")
+                if not os.path.exists(image_path) and os.path.exists(pointer_path):
+                    with open(pointer_path, "r", encoding="utf-8") as f:
+                        referenced_path = f.read().strip()
+                    image_path = referenced_path
+                    if not os.path.isabs(image_path):
+                        image_path = os.path.normpath(os.path.join(sample_path, image_path))
                 prompt_path = os.path.join(sample_path, "prompt.txt")
                 gt_path = os.path.join(sample_path, "gt_combined.mp4")
 
                 if not os.path.exists(image_path):
-                    log.warning(f"[{sample_idx}] SKIP {sample_name}: first_frame.png not found")
+                    log.warning(f"[{sample_idx}] SKIP {sample_name}: first_frame image not found")
                     continue
 
                 prompt = args.prompt or "Multiple Minecraft players in a flat world"

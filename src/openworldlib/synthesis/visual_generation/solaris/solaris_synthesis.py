@@ -42,6 +42,7 @@ class SolarisSynthesis(BaseSynthesis):
         num_frames_eval=None,
         experiment_name: str = "solaris",
         cuda_visible_devices: str = "0",
+        eval_metrics: str = "fid",
         timeout: Optional[int] = None,
         **kwargs,
     ) -> Dict[str, object]:
@@ -83,7 +84,10 @@ class SolarisSynthesis(BaseSynthesis):
         completed = run_method_command(
             command,
             cwd=self.runtime_dir,
-            env={"CUDA_VISIBLE_DEVICES": cuda_visible_devices},
+            env={
+                "CUDA_VISIBLE_DEVICES": cuda_visible_devices,
+                "SOLARIS_EVAL_METRICS": eval_metrics,
+            },
             python_paths=[self.runtime_dir],
             timeout=timeout,
         )

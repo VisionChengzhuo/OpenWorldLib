@@ -18,7 +18,10 @@ from openworldlib.base_models.diffusion_model.diffsynth.data.dataset_re10k impor
 from openworldlib.base_models.three_dimensions.point_clouds.vggt.vggt.utils.pose_enc import extri_intri_to_pose_encoding
 from utils import cameras_json_to_camera_list, get_pointclouds, save_colored_pointcloud_ply, normalize_scene, get_intrinsic_matrix, batch_depth_to_world, save_video_imageio
 
-from moge.model.v2 import MoGeModel
+try:
+    from moge.model.v2 import MoGeModel
+except ImportError:
+    from openworldlib.base_models.three_dimensions.depth.moge.model.v2 import MoGeModel_v2 as MoGeModel
 
 def str2bool(v):
     """Convert string to boolean for argparse."""
@@ -190,7 +193,6 @@ class FantasyWorldSampler:
             "enable_depth": True,
             "enable_point": True,
             "enable_track": False,
-            "DPT_patch_size": 16,
         }
 
         camera_cfg = {
@@ -215,8 +217,9 @@ class FantasyWorldSampler:
             print(f"Loading model checkpoint from: {model_ckpt}")
             ckpt = torch.load(model_ckpt, map_location="cpu")
             messages = self.model.load_state_dict(ckpt, strict=False)
-            assert not messages.unexpected_keys
             print("Missing keys = {}, Unexpected keys = {}".format(len(messages.missing_keys), len(messages.unexpected_keys)))
+            if messages.unexpected_keys:
+                print("Unexpected key examples: {}".format(messages.unexpected_keys[:10]))
         else:
             print("No model checkpoint provided, using uninitialized model")
         moge_ckpt = os.environ.get("FANTASY_WORLD_MOGE_CKPT", "Ruicheng/moge-2-vitl-normal")

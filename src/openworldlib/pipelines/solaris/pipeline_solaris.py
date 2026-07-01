@@ -52,6 +52,7 @@ class SolarisPipeline:
         num_frames_eval=None,
         experiment_name: str = "solaris",
         cuda_visible_devices: str = "0",
+        eval_metrics: str = "fid",
         timeout: Optional[int] = None,
         **kwargs,
     ):
@@ -65,6 +66,7 @@ class SolarisPipeline:
             num_frames_eval=num_frames_eval,
             experiment_name=experiment_name,
             cuda_visible_devices=cuda_visible_devices,
+            eval_metrics=eval_metrics,
             timeout=timeout,
             **kwargs,
         )

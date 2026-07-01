@@ -63,7 +63,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--vae", default=None, help="VAE path (local or hf://); defaults to the public HF tokenizer")
     parser.add_argument("--text-encoder", default=None, help="text-encoder path (local dir or hf://); defaults to the public HF model")
     parser.add_argument("--prompt", default=None)
-    parser.add_argument("--eval-dir", required=True, help="directory of example samples with first_frame image and actions")
+    parser.add_argument(
+        "--eval-dir",
+        required=True,
+        help="directory of example samples with first_frame image or first_frame_path.txt and actions",
+    )
     parser.add_argument("--n-players", type=int, default=2, help="number of players in each eval-dir first_frame image")
     parser.add_argument("--max-eval-samples", type=int, default=None)
     parser.add_argument("--output", required=True)
@@ -96,8 +100,17 @@ def load_example_sample(
         if os.path.exists(candidate):
             image_path = candidate
             break
+    pointer_path = os.path.join(sample_dir, "first_frame_path.txt")
+    if image_path is None and os.path.exists(pointer_path):
+        with open(pointer_path, "r", encoding="utf-8") as f:
+            referenced_path = f.read().strip()
+        if not referenced_path:
+            raise ValueError(f"{pointer_path} is empty")
+        image_path = referenced_path
+        if not os.path.isabs(image_path):
+            image_path = os.path.normpath(os.path.join(sample_dir, image_path))
     if image_path is None:
-        raise FileNotFoundError(f"No first_frame image found under {sample_dir}")
+        raise FileNotFoundError(f"No first_frame image or first_frame_path.txt found under {sample_dir}")
     image = media.read_image(image_path)
     image_w = image.shape[1]
     if image_w % n_players != 0:
@@ -174,13 +187,13 @@ def main() -> None:
 
     sample_dirs = []
     for root, _, files in os.walk(args.eval_dir):
-        if any(name in files for name in ("first_frame.png", "first_frame.jpg", "first_frame.jpeg")):
+        if any(name in files for name in ("first_frame.png", "first_frame.jpg", "first_frame.jpeg", "first_frame_path.txt")):
             sample_dirs.append(root)
     sample_dirs = sorted(sample_dirs)
     if args.max_eval_samples is not None:
         sample_dirs = sample_dirs[: args.max_eval_samples]
     if not sample_dirs:
-        raise ValueError(f"No samples with first_frame image found under {args.eval_dir}")
+        raise ValueError(f"No samples with first_frame image or first_frame_path.txt found under {args.eval_dir}")
 
     for sample_dir in sample_dirs:
         rel_name = os.path.relpath(sample_dir, args.eval_dir)

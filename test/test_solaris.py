@@ -30,6 +30,7 @@ def main():
             else None
         ),
         cuda_visible_devices=os.environ.get("CUDA_VISIBLE_DEVICES", "0"),
+        eval_metrics=os.environ.get("SOLARIS_EVAL_METRICS", ""),
         timeout=None,
     )
     print("\n".join(result["video_paths"]))

@@ -6,11 +6,15 @@ import torch
 from torch import nn
 
 from utils.scheduler import SchedulerInterface, FlowMatchScheduler
-from wan.modules.tokenizers import HuggingfaceTokenizer
-from wan.modules.model import WanModel, RegisterTokens, GanAttentionBlock
-from wan.modules.vae import _video_vae
-from wan.modules.t5 import umt5_xxl
-from wan.modules.causal_model import CausalWanModel
+from openworldlib.base_models.diffusion_model.video.wan_2p1_memflow.modules.tokenizers import HuggingfaceTokenizer
+from openworldlib.base_models.diffusion_model.video.wan_2p1_memflow.modules.model import (
+    GanAttentionBlock,
+    RegisterTokens,
+    WanModel,
+)
+from openworldlib.base_models.diffusion_model.video.wan_2p1_memflow.modules.vae import _video_vae
+from openworldlib.base_models.diffusion_model.video.wan_2p1_memflow.modules.t5 import umt5_xxl
+from openworldlib.base_models.diffusion_model.video.wan_2p1_memflow.modules.causal_model import CausalWanModel
 
 
 class WanTextEncoder(torch.nn.Module):

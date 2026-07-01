@@ -1,3 +1,5 @@
+import os
+
 import jax
 import jax.experimental
 import jax.experimental.multihost_utils
@@ -346,7 +348,11 @@ class BaseMPRunner(BaseRunner):
                 )
                 global_i += num_processes
 
-        metrics = ["fid"]
+        metrics = [
+            metric.strip()
+            for metric in os.environ.get("SOLARIS_EVAL_METRICS", "fid").split(",")
+            if metric.strip()
+        ]
         n_prompt_frames = 1
 
         fid_calculator = None
